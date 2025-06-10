@@ -46,6 +46,7 @@ class BosPlanApp:
         self.symbol_var = tk.StringVar()
         self.entry_price_var = tk.StringVar()
         self.position_var = tk.StringVar(value="0")
+        self.current_symbol = ""  # 현재 선택된 종목 추적
         
         try:
             self.setup_ui()
@@ -111,6 +112,8 @@ class BosPlanApp:
             symbol_entry = tk.Entry(symbol_frame, textvariable=self.symbol_var, font=('Segoe UI', 12))
             symbol_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
             symbol_entry.bind('<Return>', lambda e: self.download_data())
+            # 종목 변경 감지
+            self.symbol_var.trace('w', self.on_symbol_change)
             
             search_btn = tk.Button(symbol_frame, text="🔍", width=3, command=self.search_korean_stock)
             search_btn.pack(side=tk.RIGHT, padx=(5, 0))
@@ -187,12 +190,15 @@ class BosPlanApp:
             input_panel.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 15))
             
             tk.Label(input_panel, text="Total Budget:", font=('Segoe UI', 12, 'bold')).pack(anchor=tk.W)
-            self.budget_var = tk.StringVar(value="10000")
-            tk.Entry(input_panel, textvariable=self.budget_var, font=('Segoe UI', 12)).pack(fill=tk.X, pady=(5, 10))
+            self.budget_var = tk.StringVar(value="10000")  # 기본값 (미국 주식용)
+            budget_entry = tk.Entry(input_panel, textvariable=self.budget_var, font=('Segoe UI', 12))
+            budget_entry.pack(fill=tk.X, pady=(5, 10))
+            # 수정 가능하도록 바인딩 제거하지 않음
             
             tk.Label(input_panel, text="Current Price:", font=('Segoe UI', 12, 'bold')).pack(anchor=tk.W)
             self.current_price_var = tk.StringVar()
-            tk.Entry(input_panel, textvariable=self.current_price_var, font=('Segoe UI', 12)).pack(fill=tk.X, pady=(5, 10))
+            current_price_entry = tk.Entry(input_panel, textvariable=self.current_price_var, font=('Segoe UI', 12))
+            current_price_entry.pack(fill=tk.X, pady=(5, 10))
             
             tk.Label(input_panel, text="Strategy:", font=('Segoe UI', 12, 'bold')).pack(anchor=tk.W)
             self.strategy_var = tk.StringVar(value="single")
@@ -303,6 +309,42 @@ class BosPlanApp:
         except Exception as e:
             self.error_handler.handle_exception(e, True, "Crash tab creation")
     
+    # 새로 추가된 메서드
+    def on_symbol_change(self, *args):
+        """종목 변경 시 호출되는 콜백 함수"""
+        try:
+            new_symbol = self.symbol_var.get().strip()
+            if new_symbol != self.current_symbol:
+                self.current_symbol = new_symbol
+                self.update_budget_for_market()
+        except Exception as e:
+            self.logger.error(f"Symbol change handling failed: {e}")
+    
+    def update_budget_for_market(self):
+        """시장에 따라 예산 기본값 업데이트"""
+        try:
+            symbol = self.current_symbol
+            if not symbol:
+                return
+            
+            # 한국 주식 코드 처리
+            if symbol.isdigit():
+                symbol = symbol.zfill(6)
+            
+            is_korean = DataValidator.is_korean_stock(symbol)
+            
+            if is_korean:
+                # 한국 주식: 1천만원 기본
+                self.budget_var.set("10000000")
+            else:
+                # 미국 주식: 1만달러 기본
+                self.budget_var.set("10000")
+            
+            self.logger.info(f"Budget updated for {'Korean' if is_korean else 'US'} stock: {symbol}")
+            
+        except Exception as e:
+            self.logger.error(f"Budget update failed: {e}")
+    
     # 이벤트 핸들러들
     def search_korean_stock(self):
         """한국 주식 검색"""
@@ -393,7 +435,12 @@ class BosPlanApp:
                 data = self.data_manager.get_current_data()
                 if data is not None:
                     current_price = data['Close'].iloc[-1]
-                    self.current_price_var.set(f"{current_price:.2f}")
+                    # 한국 주식인 경우 소수점 없이 표시
+                    symbol = self.data_manager.get_current_symbol()
+                    if DataValidator.is_korean_stock(symbol):
+                        self.current_price_var.set(f"{current_price:.0f}")
+                    else:
+                        self.current_price_var.set(f"{current_price:.2f}")
                 else:
                     messagebox.showwarning("⚠️", "현재가를 입력하거나 종목 데이터를 로드해주세요.")
                     return
@@ -427,12 +474,13 @@ class BosPlanApp:
             
             if data is not None:
                 current_price = data['Close'].iloc[-1]
-                self.current_price_var.set(f"{current_price:.2f}")
                 
-                # 한국/미국 구분해서 메시지 표시
+                # 한국/미국 구분해서 소수점 처리
                 if DataValidator.is_korean_stock(symbol):
+                    self.current_price_var.set(f"{current_price:.0f}")
                     messagebox.showinfo("✅", f"현재가 ₩{current_price:,.0f}이 입력되었습니다.")
                 else:
+                    self.current_price_var.set(f"{current_price:.2f}")
                     messagebox.showinfo("✅", f"현재가 ${current_price:.2f}이 입력되었습니다.")
             else:
                 messagebox.showwarning("⚠️", "먼저 종목 데이터를 로드해주세요.")
@@ -656,7 +704,7 @@ VaR 95%: {risk_result['var_95']:.2f}%
                 tk.Button(button_frame, text="❌ 닫기", 
                          command=report_window.destroy).pack(side=tk.RIGHT)
             else:
- 실패")
+                messagebox.showerror("❌", "리포트 생성 실패")
                 
         except Exception as e:
             self.error_handler.handle_exception(e, True, "AI report generation")

@@ -6,3 +6,16 @@
 [2025-06-10 19:10:42] INFO: Korean stock selected: 삼성전자 (5930)
 [2025-06-10 19:11:23] INFO: File loaded: AAPL_250610.csv
 [2025-06-10 19:11:31] INFO: File loaded: 005930_250610.csv
+[2025-06-10 19:49:12] INFO: 1Bo's Plan v1.0.0 started successfully
+[2025-06-10 19:49:43] INFO: Korean stock selected: SK하이닉스 (660)
+[2025-06-10 20:09:31] INFO: 1Bo's Plan v1.0.0 started successfully
+[2025-06-10 20:09:37] INFO: Budget updated for Korean stock: 000660
+[2025-06-10 20:09:37] INFO: File loaded: 000660_250610.csv
+[2025-06-10 20:14:37] INFO: 1Bo's Plan v1.0.0 started successfully
+[2025-06-10 20:14:47] INFO: Budget updated for Korean stock: 000660
+[2025-06-10 20:14:47] INFO: File loaded: 000660_250610.csv
+[2025-06-10 20:17:14] INFO: 1Bo's Plan v1.0.0 started successfully
+[2025-06-10 20:17:21] INFO: Budget updated for Korean stock: 000660
+[2025-06-10 20:17:22] INFO: File loaded: 000660_250610.csv
+[2025-06-10 20:17:56] INFO: Budget updated for US stock: AAPL
+[2025-06-10 20:17:56] INFO: File loaded: AAPL_250610.csv

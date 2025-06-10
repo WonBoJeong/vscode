@@ -17,7 +17,7 @@ import sys
 # 로컬 모듈 import
 sys.path.append(str(Path(__file__).parent.parent))
 from config import INVESTMENT_CONFIG, LEVERAGE_ETFS
-from .utils import Logger, format_currency, format_percentage
+from .utils import Logger, format_currency, format_percentage, DataValidator, format_currency_auto
 
 class InvestmentCalculator:
     """투자 계산기 클래스"""
@@ -45,10 +45,10 @@ class InvestmentCalculator:
                 'break_even_price': current_price * (1 + self.commission_rate),
                 'profit_targets': self._calculate_profit_targets(current_price, shares),
                 'stop_losses': self._calculate_stop_losses(current_price, shares),
-                'summary': f"${budget:,.2f} 투자로 {shares:.2f}주 매수"
+                'summary': f"투자로 {shares:.2f}주 매수"
             }
             
-            self.logger.info(f"Single investment calculated: {shares:.2f} shares at ${current_price:.2f}")
+            self.logger.info(f"Single investment calculated: {shares:.2f} shares at {current_price}")
             return result
             
         except Exception as e:
@@ -140,10 +140,10 @@ class InvestmentCalculator:
                 'average_cost': avg_cost,
                 'break_even_price': avg_cost * (1 + self.commission_rate),
                 'profit_targets': self._calculate_profit_targets(avg_cost, total_shares),
-                'summary': f"피라미드 {splits}단계로 평균단가 ${avg_cost:.2f}"
+                'summary': f"피라미드 {splits}단계로 평균단가"
             }
             
-            self.logger.info(f"Pyramid investment calculated: {splits} levels, avg cost ${avg_cost:.2f}")
+            self.logger.info(f"Pyramid investment calculated: {splits} levels, avg cost {avg_cost}")
             return result
             
         except Exception as e:
@@ -402,6 +402,9 @@ class InvestmentCalculator:
             strategy = calculation_result.get('strategy', 'unknown')
             timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
+            # 한국/미국 구분
+            is_korean = DataValidator.is_korean_stock(symbol) if symbol else False
+            
             report = f"""💰 1Bo's Plan Investment Report
 
 {'=' * 60}
@@ -409,18 +412,19 @@ class InvestmentCalculator:
 • Symbol: {symbol}
 {f'• Company: {company_name}' if company_name else ''}
 • Strategy: {strategy.upper()}
+• Market: {'Korean Stock (KRX)' if is_korean else 'US Stock (NYSE/NASDAQ)'}
 • Analysis Time: {timestamp}
 
 """
             
             if strategy == 'single':
-                report += self._generate_single_report(calculation_result)
+                report += self._generate_single_report(calculation_result, symbol)
             elif strategy == 'dca':
-                report += self._generate_dca_report(calculation_result)
+                report += self._generate_dca_report(calculation_result, symbol)
             elif strategy == 'pyramid':
-                report += self._generate_pyramid_report(calculation_result)
+                report += self._generate_pyramid_report(calculation_result, symbol)
             elif strategy == 'leverage_etf':
-                report += self._generate_leverage_report(calculation_result)
+                report += self._generate_leverage_report(calculation_result, symbol)
             
             report += """
 ⚠️ Important Disclaimer:
@@ -434,55 +438,184 @@ class InvestmentCalculator:
             self.logger.error(f"Report generation failed: {e}")
             return f"리포트 생성 실패: {e}"
     
-    def _generate_single_report(self, result):
+    def _generate_single_report(self, result, symbol):
         """일괄투자 리포트"""
-        return f"""📌 Single Investment Strategy:
+        is_korean = DataValidator.is_korean_stock(symbol)
+        
+        # 화폐 단위에 따른 포맷팅
+        budget_text = format_currency_auto(result['budget'], symbol)
+        commission_text = format_currency_auto(result['commission'], symbol)
+        net_budget_text = format_currency_auto(result['net_budget'], symbol)
+        price_text = format_currency_auto(result['current_price'], symbol)
+        break_even_text = format_currency_auto(result['break_even_price'], symbol)
+        
+        # 주식 수 포맷팅
+        shares_text = f"{result['shares']:,.0f}" if is_korean else f"{result['shares']:.2f}"
+        
+        report = f"""📌 Single Investment Strategy:
 
 💵 Investment Details:
-• Total Budget: {format_currency(result['budget'])}
-• Commission: {format_currency(result['commission'])}
-• Net Investment: {format_currency(result['net_budget'])}
-• Purchase Price: {format_currency(result['current_price'])}
-• Shares to Buy: {result['shares']:.2f}
+• Total Budget: {budget_text}
+• Commission: {commission_text}
+• Net Investment: {net_budget_text}
+• Purchase Price: {price_text}
+• Shares to Buy: {shares_text}주
+• Break Even Price: {break_even_text}
 
 🎯 Profit Targets:
 """
+        
+        # 수익 목표 추가
+        for target in result['profit_targets']:
+            target_price_text = format_currency_auto(target['price'], symbol)
+            profit_text = format_currency_auto(target['profit'], symbol)
+            report += f"• {target['percentage']:>5.1f}%: {target_price_text} (수익 {profit_text})\n"
+        
+        report += "\n✂️ Stop Loss Levels:\n"
+        
+        # 손절 레벨 추가
+        for stop in result['stop_losses']:
+            stop_price_text = format_currency_auto(stop['price'], symbol)
+            loss_text = format_currency_auto(stop['loss'], symbol)
+            report += f"• -{stop['percentage']:>4.1f}%: {stop_price_text} (손실 {loss_text})\n"
+        
+        return report
     
-    def _generate_dca_report(self, result):
+    def _generate_dca_report(self, result, symbol):
         """DCA 리포트"""
-        return f"""📌 DCA Strategy:
+        is_korean = DataValidator.is_korean_stock(symbol)
+        
+        # 화폐 단위에 따른 포맷팅
+        budget_text = format_currency_auto(result['budget'], symbol)
+        amount_per_buy_text = format_currency_auto(result['amount_per_buy'], symbol)
+        commission_per_buy_text = format_currency_auto(result['commission_per_buy'], symbol)
+        net_amount_text = format_currency_auto(result['net_amount_per_buy'], symbol)
+        total_commission_text = format_currency_auto(result['total_commission'], symbol)
+        break_even_text = format_currency_auto(result['break_even_price'], symbol)
+        
+        # 주식 수 포맷팅
+        shares_per_buy_text = f"{result['shares_per_buy']:,.0f}" if is_korean else f"{result['shares_per_buy']:.2f}"
+        total_shares_text = f"{result['total_shares']:,.0f}" if is_korean else f"{result['total_shares']:.2f}"
+        
+        report = f"""📌 DCA (Dollar Cost Averaging) Strategy:
 
 💵 DCA Plan:
-• Total Budget: {format_currency(result['budget'])}
-• Number of Purchases: {result['splits']}
-• Amount per Purchase: {format_currency(result['amount_per_buy'])}
-• Expected Total Shares: {result['total_shares']:.2f}
+• Total Budget: {budget_text}
+• Number of Purchases: {result['splits']}회
+• Amount per Purchase: {amount_per_buy_text}
+• Commission per Purchase: {commission_per_buy_text}
+• Net Amount per Purchase: {net_amount_text}
+• Shares per Purchase: {shares_per_buy_text}주
+• Expected Total Shares: {total_shares_text}주
+• Total Commission: {total_commission_text}
+• Break Even Price: {break_even_text}
 
-📊 Scenarios:
+📊 Market Scenarios:
 """
+        
+        # 시나리오 분석 추가
+        for scenario in result['scenarios']:
+            avg_cost_text = format_currency_auto(scenario['avg_cost'], symbol)
+            current_value_text = format_currency_auto(scenario['current_value'], symbol)
+            profit_loss_text = format_currency_auto(abs(scenario['profit_loss']), symbol)
+            sign = "+" if scenario['profit_loss'] >= 0 else "-"
+            
+            # 주식 수 포맷팅
+            scenario_shares_text = f"{scenario['total_shares']:,.0f}" if is_korean else f"{scenario['total_shares']:.2f}"
+            
+            report += f"""• {scenario['scenario']}:
+  평균단가: {avg_cost_text}
+  보유주식: {scenario_shares_text}주
+  현재가치: {current_value_text}
+  손익: {sign}{profit_loss_text} ({scenario['profit_loss_pct']:+.2f}%)
+
+"""
+        
+        return report
     
-    def _generate_pyramid_report(self, result):
+    def _generate_pyramid_report(self, result, symbol):
         """피라미드 리포트"""
-        return f"""📌 Pyramid Strategy:
+        is_korean = DataValidator.is_korean_stock(symbol)
+        
+        # 화폐 단위에 따른 포맷팅
+        budget_text = format_currency_auto(result['budget'], symbol)
+        avg_cost_text = format_currency_auto(result['average_cost'], symbol)
+        total_investment_text = format_currency_auto(result['total_investment'], symbol)
+        break_even_text = format_currency_auto(result['break_even_price'], symbol)
+        
+        # 주식 수 포맷팅
+        total_shares_text = f"{result['total_shares']:,.0f}" if is_korean else f"{result['total_shares']:.2f}"
+        
+        report = f"""📌 Pyramid Investment Strategy:
 
 💵 Pyramid Plan:
-• Total Budget: {format_currency(result['budget'])}
-• Number of Levels: {result['splits']}
-• Average Cost: {format_currency(result['average_cost'])}
-• Total Shares: {result['total_shares']:.2f}
+• Total Budget: {budget_text}
+• Number of Levels: {result['splits']}단계
+• Drop Rate per Level: {result['drop_rate']*100:.1f}%
+• Average Cost: {avg_cost_text}
+• Total Shares: {total_shares_text}주
+• Total Investment: {total_investment_text}
+• Break Even Price: {break_even_text}
 
 📊 Level Details:
 """
+        
+        # 피라미드 단계별 상세 정보
+        for plan in result['pyramid_plan']:
+            price_text = format_currency_auto(plan['price'], symbol)
+            amount_text = format_currency_auto(plan['amount'], symbol)
+            net_amount_text = format_currency_auto(plan['net_amount'], symbol)
+            cumulative_investment_text = format_currency_auto(plan['cumulative_investment'], symbol)
+            
+            # 주식 수 포맷팅
+            shares_text = f"{plan['shares']:,.0f}" if is_korean else f"{plan['shares']:.2f}"
+            cumulative_shares_text = f"{plan['cumulative_shares']:,.0f}" if is_korean else f"{plan['cumulative_shares']:.2f}"
+            
+            report += f"""• Level {plan['level']} (-{plan['drop_pct']:.1f}%):
+  매수가격: {price_text}
+  투자금액: {amount_text}
+  순투자금: {net_amount_text}
+  매수주식: {shares_text}주
+  누적주식: {cumulative_shares_text}주
+  누적투자: {cumulative_investment_text}
+
+"""
+        
+        return report
     
-    def _generate_leverage_report(self, result):
+    def _generate_leverage_report(self, result, symbol):
         """레버리지 ETF 리포트"""
-        return f"""⚡ Leverage ETF Strategy:
+        # 화폐 단위에 따른 포맷팅
+        original_budget_text = format_currency_auto(result['original_budget'], symbol)
+        recommended_budget_text = format_currency_auto(result['recommended_budget'], symbol)
+        commission_text = format_currency_auto(result['commission'], symbol)
+        net_budget_text = format_currency_auto(result['net_budget'], symbol)
+        price_text = format_currency_auto(result['current_price'], symbol)
+        stop_loss_text = format_currency_auto(result['strict_stop_loss'], symbol)
+        
+        report = f"""⚡ Leverage ETF Strategy:
 
 🚨 Special Management Required:
-• Original Budget: {format_currency(result['original_budget'])}
-• Recommended Budget: {format_currency(result['recommended_budget'])} (70%)
-• Strict Stop Loss: {format_currency(result['strict_stop_loss'])} (15%)
+• Original Budget: {original_budget_text}
+• Recommended Budget: {recommended_budget_text} (70% 권장)
+• Reason: {result['budget_reduction_reason']}
+• Commission: {commission_text}
+• Net Investment: {net_budget_text}
+• Purchase Price: {price_text}
+• Shares to Buy: {result['shares']:.2f}주
+• Strict Stop Loss: {stop_loss_text} (15% 손절)
 • Max Holding Period: {result['max_holding_period']}
 
-⚠️ Warning: {result['warning']}
+⚠️ Leverage ETF Risks:
+• Time Decay: {result['time_decay_monthly']*100:.1f}% per month
+• Volatility Multiplier: {result['volatility_multiplier']}x
+• Warning: {result['warning']}
+
+💡 Management Tips:
+• 절대 30일 이상 장기 보유 금지
+• 15% 손실 시 즉시 손절 실행
+• 일일 변동성 모니터링 필수
+• 감정 거래 금지, 기계적 실행
 """
+        
+        return report

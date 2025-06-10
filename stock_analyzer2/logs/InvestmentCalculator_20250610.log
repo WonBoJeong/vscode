@@ -1,3 +1,11 @@
 [2025-06-10 18:45:45] INFO: Single investment calculated: 49.59 shares at $201.45
 [2025-06-10 18:45:55] INFO: Pyramid investment calculated: 4 levels, avg cost $180.76
 [2025-06-10 19:11:52] INFO: Single investment calculated: 0.17 shares at $59200.00
+[2025-06-10 20:09:50] INFO: Single investment calculated: 43.34 shares at $230500.00
+[2025-06-10 20:12:02] INFO: Single investment calculated: 4334.06 shares at $230500.00
+[2025-06-10 20:14:56] INFO: Single investment calculated: 43.34 shares at 230500.0
+[2025-06-10 20:14:56] ERROR: Report generation failed: Invalid format specifier ',.0f if is_korean else result['shares']:.2f' for object of type 'float'
+[2025-06-10 20:15:06] INFO: Single investment calculated: 43.34 shares at 230500.0
+[2025-06-10 20:15:06] ERROR: Report generation failed: Invalid format specifier ',.0f if is_korean else result['shares']:.2f' for object of type 'float'
+[2025-06-10 20:17:30] INFO: Single investment calculated: 43.34 shares at 230500.0
+[2025-06-10 20:18:20] INFO: Single investment calculated: 49.59 shares at 201.45
