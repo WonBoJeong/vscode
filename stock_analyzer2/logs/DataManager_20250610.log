@@ -1,0 +1,9 @@
+[2025-06-10 18:45:10] INFO: Starting download for AAPL
+[2025-06-10 18:45:11] INFO: Download completed: AAPL_250610.csv (500 rows)
+[2025-06-10 19:00:27] ERROR: Download failed for 5930: Invalid stock symbol: 5930
+[2025-06-10 19:10:51] INFO: Korean stock code formatted: 005930
+[2025-06-10 19:10:51] INFO: Starting download for 005930
+[2025-06-10 19:10:51] INFO: Korean stock: 삼성전자 (005930)
+[2025-06-10 19:10:53] INFO: Download completed: 005930_250610.csv (485 rows)
+[2025-06-10 19:11:23] INFO: Data loaded: AAPL_250610.csv (500 rows)
+[2025-06-10 19:11:31] INFO: Data loaded: 005930_250610.csv (485 rows)

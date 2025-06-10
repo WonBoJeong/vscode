@@ -1,0 +1,26 @@
+{
+  "popular_stocks": [
+    "AAPL",
+    "TSLA",
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "META",
+    "NVDA",
+    "NFLX",
+    "IONQ"
+  ],
+  "my_stocks": [
+    "VOO",
+    "VTV",
+    "PLTR",
+    "TQQQ",
+    "TNA",
+    "SOXL",
+    "SCHD",
+    "JEPI",
+    "JEPQ",
+    "TSLL"
+  ],
+  "last_updated": "2025-06-10T16:21:28.832760"
+}

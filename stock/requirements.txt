@@ -1,0 +1,36 @@
+# VStock Advanced - 주식 분석 프로그램 필요 라이브러리
+
+# 핵심 라이브러리
+pandas>=1.5.0
+numpy>=1.21.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# GUI 라이브러리 (tkinter는 Python 기본 포함)
+# tkinter는 별도 설치 불필요
+
+# 기술적 분석 라이브러리
+ta>=0.10.0
+TA-Lib>=0.4.0  # 선택사항 (설치 어려울 수 있음)
+
+# 데이터 처리
+openpyxl>=3.0.0  # Excel 파일 읽기/쓰기
+xlrd>=2.0.0      # Excel 파일 읽기 지원
+
+# 추가 유용한 라이브러리
+scikit-learn>=1.0.0  # 머신러닝 기능 (선택사항)
+scipy>=1.7.0         # 과학 계산
+
+# 개발/디버깅
+pytest>=6.0.0       # 테스트 (개발용)
+
+# 주식 데이터 API (선택사항)
+yfinance>=0.1.70     # Yahoo Finance API
+alpha-vantage>=2.3.0 # Alpha Vantage API
+
+# 웹 관련 (선택사항)
+requests>=2.25.0
+beautifulsoup4>=4.9.0
+
+# 성능 향상 (선택사항)
+numba>=0.56.0

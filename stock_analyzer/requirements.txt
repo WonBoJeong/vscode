@@ -1,0 +1,18 @@
+# VStock Advanced - Required Libraries for Real Stock Data Analysis
+
+# Core data processing
+pandas>=1.5.0
+numpy>=1.21.0
+
+# GUI framework
+# tkinter (included with Python)
+
+# Plotting and visualization
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Stock data download
+yfinance>=0.2.0
+
+# Additional utilities
+requests>=2.25.0

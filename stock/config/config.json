@@ -1,0 +1,48 @@
+{
+  "data_folder": "D:/vscode/stock/data",
+  "theme": "modern",
+  "auto_refresh": true,
+  "refresh_interval": 60,
+  "default_symbols": [
+    "AAPL",
+    "TSLA", 
+    "MSFT",
+    "GOOGL",
+    "AMZN",
+    "META",
+    "NVDA",
+    "PLTR"
+  ],
+  "portfolio_symbols": [
+    "VOO",
+    "VTV", 
+    "PLTR",
+    "TQQQ",
+    "TNA",
+    "SOXL",
+    "SCHD",
+    "JEPI",
+    "JEPQ",
+    "TSLL"
+  ],
+  "chart_settings": {
+    "default_period": "1Y",
+    "show_volume": true,
+    "show_moving_averages": true,
+    "candlestick_style": true
+  },
+  "analysis_settings": {
+    "rsi_period": 14,
+    "macd_fast": 12,
+    "macd_slow": 26,
+    "macd_signal": 9,
+    "bollinger_period": 20,
+    "bollinger_std": 2
+  },
+  "ui_settings": {
+    "window_width": 1600,
+    "window_height": 900,
+    "font_size": 10,
+    "color_theme": "light"
+  }
+}

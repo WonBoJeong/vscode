@@ -1,0 +1,6 @@
+[2025-06-10 18:46:03] INFO: Crash analysis completed for AAPL: {'level': 'NORMAL', 'emoji': '📈', 'description': '정상 범위'} (16.9)
+[2025-06-10 18:46:05] INFO: Cutloss levels calculated for AAPL
+[2025-06-10 18:46:07] INFO: Crash analysis completed for AAPL: {'level': 'NORMAL', 'emoji': '📈', 'description': '정상 범위'} (16.9)
+[2025-06-10 19:13:44] INFO: Crash analysis completed for 005930: {'level': 'NORMAL', 'emoji': '📈', 'description': '정상 범위'} (19.0)
+[2025-06-10 19:13:50] INFO: Cutloss levels calculated for 005930
+[2025-06-10 19:13:55] INFO: Crash analysis completed for 005930: {'level': 'NORMAL', 'emoji': '📈', 'description': '정상 범위'} (19.0)
