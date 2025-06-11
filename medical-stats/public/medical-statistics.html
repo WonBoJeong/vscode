@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>한국 의료기관 통계 대시보드</title>
+  
+  <!-- React & ReactDOM CDN - 개발 버전으로 변경 -->
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  
+  <!-- 필요한 의존성 추가 -->
+  <script src="https://unpkg.com/prop-types@15.7.2/prop-types.min.js"></script>
+  <script src="https://unpkg.com/d3-scale@3.2.3/dist/d3-scale.min.js"></script>
+  <script src="https://unpkg.com/d3-array@2.8.0/dist/d3-array.min.js"></script>
+  <script src="https://unpkg.com/d3-format@2.0.0/dist/d3-format.min.js"></script>
+  <script src="https://unpkg.com/d3-time@2.0.0/dist/d3-time.min.js"></script>
+  <script src="https://unpkg.com/d3-time-format@3.0.0/dist/d3-time-format.min.js"></script>
+  <script src="https://unpkg.com/d3-color@2.0.0/dist/d3-color.min.js"></script>
+  <script src="https://unpkg.com/d3-interpolate@2.0.1/dist/d3-interpolate.min.js"></script>
+  <script src="https://unpkg.com/d3-path@2.0.0/dist/d3-path.min.js"></script>
+  <script src="https://unpkg.com/d3-shape@2.0.0/dist/d3-shape.min.js"></script>
+  
+  <!-- Recharts 라이브러리 -->
+  <script src="https://unpkg.com/recharts@2.1.15/umd/Recharts.js"></script>
+  
+  <style>
+    /* 기본 스타일 */
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      color: #2c3e50;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: #666;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .summary {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border-left: 4px solid #3498db;
+    }
+
+    .summary h2 {
+      font-size: 20px;
+      color: #3498db;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .summary ul {
+      padding-left: 20px;
+      margin-bottom: 0;
+      text-align: left;
+    }
+
+    .summary li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+
+    .key-stat {
+      font-weight: bold;
+      color: #e74c3c;
+    }
+
+    .chart-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .chart-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .chart {
+      height: 400px;
+      width: 100%;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      padding: 10px;
+    }
+
+    /* 로딩 표시기 스타일 */
+    .loading {
+      text-align: center;
+      padding: 20px;
+      font-size: 18px;
+      color: #666;
+    }
+
+    /* 오류 메시지 스타일 */
+    .error-message {
+      background-color: #ffe6e6;
+      color: #d63031;
+      padding: 15px;
+      border-radius: 5px;
+      margin: 20px 0;
+      border-left: 4px solid #d63031;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+      color: #666;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .chart-container {
+        padding: 15px;
+      }
+      
+      .chart {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>한국 의료기관 종별 통계 분석 (2008-2017)</h1>
+      <p>2008년부터 2017년까지의 한국 의료기관 종별 추이 및 변화를 시각화한 데이터입니다.</p>
+    </header>
+
+    <div class="summary">
+      <h2>주요 통계 요약</h2>
+      <ul>
+        <li><span class="key-stat">총 의료기관 증가율:</span> 22.18% (2008년 55,620개 → 2017년 67,958개)</li>
+        <li><span class="key-stat">병원급 의료기관 증가율:</span> 64.68% (가장 높은 성장률)</li>
+        <li><span class="key-stat">의원급 의료기관 증가율:</span> 16.63%</li>
+        <li><span class="key-stat">지역별 폐업 현황:</span> 수도권(60-68%)보다 지방(83-110%)의 폐업률이 높음</li>
+        <li><span class="key-stat">취약 진료과:</span> 소아청소년과(폐업률 104.9%), 산부인과(폐업률 88.3%)</li>
+      </ul>
+    </div>
+
+    <!-- 로딩 표시기 -->
+    <div id="loading" class="loading">차트를 불러오는 중입니다...</div>
+
+    <!-- 오류 메시지 표시 영역 -->
+    <div id="error-container"></div>
+
+    <!-- 차트 컨테이너 -->
+    <div id="medical-charts"></div>
+
+    <footer>
+      <p>데이터 출처: 건강보험심사평가원 (2008-2017) | © 2025 의료통계분석 연구소</p>
+    </footer>
+  </div>
+
+  <script>
+    // 로드 오류 처리 함수
+    function showError(message) {
+      const errorContainer = document.getElementById('error-container');
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message';
+      errorDiv.textContent = message;
+      errorContainer.appendChild(errorDiv);
+      
+      // 로딩 표시기 숨기기
+      document.getElementById('loading').style.display = 'none';
+    }
+
+    // 라이브러리 로드 확인
+    window.addEventListener('load', function() {
+      try {
+        console.log('React loaded:', !!window.React);
+        console.log('ReactDOM loaded:', !!window.ReactDOM);
+        console.log('Recharts loaded:', !!window.Recharts);
+        
+        if (!window.React || !window.ReactDOM) {
+          showError('React 라이브러리 로드에 실패했습니다. 인터넷 연결을 확인하세요.');
+          return;
+        }
+        
+        if (!window.Recharts) {
+          showError('Recharts 라이브러리 로드에 실패했습니다. 인터넷 연결을 확인하세요.');
+          return;
+        }
+        
+        // 라이브러리가 로드되면 차트 초기화
+        initCharts();
+      } catch (error) {
+        console.error('초기화 오류:', error);
+        showError('차트 초기화 중 오류가 발생했습니다: ' + error.message);
+      }
+    });
+
+    // 차트 초기화 함수
+    function initCharts() {
+      try {
+        // 로딩 표시기 숨기기
+        document.getElementById('loading').style.display = 'none';
+        
+        // 리액트, 리차트 컴포넌트 가져오기
+        const { React, ReactDOM } = window;
+        const { 
+          LineChart, Line, BarChart, Bar, XAxis, YAxis, 
+          CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell 
+        } = Recharts;
+
+        // 의료기관 데이터
+        const years = ['2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017'];
+        
+        const medicalInstitutionsData = [
+          {
+            type: '상급종합병원',
+            data: [43, 44, 44, 44, 44, 43, 43, 43, 43, 43],
+            color: '#8884d8'
+          },
+          {
+            type: '종합병원',
+            data: [269, 269, 274, 275, 278, 281, 287, 294, 298, 301],
+            color: '#82ca9d'
+          },
+          {
+            type: '병원',
+            data: [1883, 2039, 2182, 2363, 2524, 2683, 2811, 2868, 2942, 3101],
+            color: '#ffc658'
+          },
+          {
+            type: '의원',
+            data: [26526, 27024, 27466, 27834, 28030, 28328, 28883, 29488, 30292, 30938],
+            color: '#ff8042'
+          },
+          {
+            type: '치과병원',
+            data: [164, 179, 187, 195, 197, 203, 205, 213, 223, 231],
+            color: '#0088FE'
+          },
+          {
+            type: '치과의원',
+            data: [13748, 14239, 14678, 15055, 15362, 15727, 16172, 16609, 17023, 17376],
+            color: '#00C49F'
+          },
+          {
+            type: '한방병원',
+            data: [146, 158, 168, 184, 201, 212, 231, 260, 282, 312],
+            color: '#FFBB28'
+          },
+          {
+            type: '한의원',
+            data: [11316, 11764, 12044, 12387, 12692, 13100, 13423, 13613, 13868, 14100],
+            color: '#FF8042'
+          }
+        ];
+
+        console.log('의료기관 데이터 준비 완료');
+
+        // 차트 데이터 준비
+        const chartData = years.map((year, index) => {
+          const dataPoint = { year };
+          medicalInstitutionsData.forEach(inst => {
+            dataPoint[inst.type] = inst.data[index];
+          });
+          return dataPoint;
+        });
+
+        // 병원급 데이터
+        const hospitalData = years.map((year, index) => {
+          return {
+            year,
+            '상급종합병원': medicalInstitutionsData[0].data[index],
+            '종합병원': medicalInstitutionsData[1].data[index],
+            '병원': medicalInstitutionsData[2].data[index]
+          };
+        });
+
+        // 증가율 데이터
+        const growthRateData = medicalInstitutionsData.map(inst => {
+          const initialValue = inst.data[0];
+          const finalValue = inst.data[9];
+          const growthRate = ((finalValue - initialValue) / initialValue * 100).toFixed(2);
+          
+          return {
+            type: inst.type,
+            growthRate: parseFloat(growthRate),
+            color: inst.color
+          };
+        });
+
+        // 2008년과 2017년 비교 데이터
+        const comparisonData = [];
+        [0, 9].forEach(yearIndex => {
+          const year = years[yearIndex];
+          const dataPoint = { year };
+          
+          medicalInstitutionsData.slice(0, 4).forEach(inst => {
+            dataPoint[inst.type] = inst.data[yearIndex];
+          });
+          
+          comparisonData.push(dataPoint);
+        });
+
+        console.log('차트 데이터 준비 완료');
+
+        // 의원급 차트 컴포넌트
+        const ClinicChart = React.createElement(
+          'div',
+          { className: 'chart-container' },
+          React.createElement('h3', { className: 'chart-title' }, '의원급 의료기관 추이'),
+          React.createElement(
+            'div',
+            { className: 'chart' },
+            React.createElement(
+              ResponsiveContainer,
+              { width: '100%', height: '100%' },
+              React.createElement(
+                LineChart,
+                { data: chartData },
+                React.createElement(CartesianGrid, { strokeDasharray: '3 3' }),
+                React.createElement(XAxis, { dataKey: 'year' }),
+                React.createElement(YAxis),
+                React.createElement(Tooltip),
+                React.createElement(Legend),
+                React.createElement(Line, { type: 'monotone', dataKey: '의원', stroke: '#ff8042', activeDot: { r: 8 } }),
+                React.createElement(Line, { type: 'monotone', dataKey: '치과의원', stroke: '#00C49F' }),
+                React.createElement(Line, { type: 'monotone', dataKey: '한의원', stroke: '#FFBB28' })
+              )
+            )
+          )
+        );
+
+        // 병원급 차트 컴포넌트
+        const HospitalChart = React.createElement(
+          'div',
+          { className: 'chart-container' },
+          React.createElement('h3', { className: 'chart-title' }, '병원급 의료기관 추이'),
+          React.createElement(
+            'div',
+            { className: 'chart' },
+            React.createElement(
+              ResponsiveContainer,
+              { width: '100%', height: '100%' },
+              React.createElement(
+                LineChart,
+                { data: hospitalData },
+                React.createElement(CartesianGrid, { strokeDasharray: '3 3' }),
+                React.createElement(XAxis, { dataKey: 'year' }),
+                React.createElement(YAxis),
+                React.createElement(Tooltip),
+                React.createElement(Legend),
+                React.createElement(Line, { type: 'monotone', dataKey: '병원', stroke: '#ffc658', activeDot: { r: 8 } }),
+                React.createElement(Line, { type: 'monotone', dataKey: '종합병원', stroke: '#82ca9d' }),
+                React.createElement(Line, { type: 'monotone', dataKey: '상급종합병원', stroke: '#8884d8' })
+              )
+            )
+          )
+        );
+
+        // 증가율 차트 컴포넌트
+        const GrowthChart = React.createElement(
+          'div',
+          { className: 'chart-container' },
+          React.createElement('h3', { className: 'chart-title' }, '의료기관 종별 증가율 (2008-2017)'),
+          React.createElement(
+            'div',
+            { className: 'chart' },
+            React.createElement(
+              ResponsiveContainer,
+              { width: '100%', height: '100%' },
+              React.createElement(
+                BarChart,
+                { data: growthRateData },
+                React.createElement(CartesianGrid, { strokeDasharray: '3 3' }),
+                React.createElement(XAxis, { dataKey: 'type' }),
+                React.createElement(YAxis, { label: { value: '증가율 (%)', angle: -90, position: 'insideLeft' } }),
+                React.createElement(Tooltip),
+                React.createElement(
+                  Bar,
+                  { dataKey: 'growthRate' },
+                  growthRateData.map((entry, index) => 
+                    React.createElement(Cell, { key: `cell-${index}`, fill: entry.color })
+                  )
+                )
+              )
+            )
+          )
+        );
+
+        // 비교 차트 컴포넌트
+        const ComparisonChart = React.createElement(
+          'div',
+          { className: 'chart-container' },
+          React.createElement('h3', { className: 'chart-title' }, '주요 의료기관 변화 비교 (2008 vs 2017)'),
+          React.createElement(
+            'div',
+            { className: 'chart' },
+            React.createElement(
+              ResponsiveContainer,
+              { width: '100%', height: '100%' },
+              React.createElement(
+                BarChart,
+                { data: comparisonData, layout: 'vertical' },
+                React.createElement(CartesianGrid, { strokeDasharray: '3 3' }),
+                React.createElement(XAxis, { type: 'number' }),
+                React.createElement(YAxis, { dataKey: 'year', type: 'category' }),
+                React.createElement(Tooltip),
+                React.createElement(Legend),
+                React.createElement(Bar, { dataKey: '상급종합병원', fill: '#8884d8' }),
+                React.createElement(Bar, { dataKey: '종합병원', fill: '#82ca9d' }),
+                React.createElement(Bar, { dataKey: '병원', fill: '#ffc658' }),
+                React.createElement(Bar, { dataKey: '의원', fill: '#ff8042' })
+              )
+            )
+          )
+        );
+
+        console.log('차트 컴포넌트 생성 완료');
+
+        // 모든 차트를 포함할 컨테이너
+        const AllCharts = React.createElement(
+          'div',
+          null,
+          ClinicChart,
+          HospitalChart,
+          GrowthChart,
+          ComparisonChart
+        );
+
+        // 리액트 컴포넌트 렌더링
+        ReactDOM.render(
+          AllCharts,
+          document.getElementById('medical-charts')
+        );
+
+        console.log('차트 렌더링 완료');
+      } catch (error) {
+        console.error('차트 초기화 오류:', error);
+        showError('차트 초기화 중 오류가 발생했습니다: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>

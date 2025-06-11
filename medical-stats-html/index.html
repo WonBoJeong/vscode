@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의료기관 개폐업 현황</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 400px;
+            margin-bottom: 50px;
+        }
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .chart-description {
+            font-size: 0.875rem;
+            margin-bottom: 10px;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 20px;
+        }
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+        }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>의료기관 개폐업 현황 분석</h1>
+
+    <div>
+        <div class="chart-title">지역별 의료기관 폐업률 (2023년)</div>
+        <div class="chart-description">개업 대비 폐업률(%): 폐업 의료기관 수 ÷ 개업 의료기관 수 × 100</div>
+        <div class="chart-container">
+            <canvas id="regionalChart"></canvas>
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FF6B6B;"></div>
+                <span>지방</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4D96FF;"></div>
+                <span>수도권</span>
+            </div>
+        </div>
+        <div class="chart-description">* 폐업률이 100%를 초과하는 지역은 개업보다 폐업이 더 많은 지역입니다.</div>
+    </div>
+
+    <div>
+        <div class="chart-title">의원급 의료기관 폐업률 (2020~2024년)</div>
+        <div class="chart-container">
+            <canvas id="clinicChart"></canvas>
+        </div>
+    </div>
+
+    <div>
+        <div class="chart-title">진료과목별 폐업률 (2020~2024년)</div>
+        <div class="chart-container">
+            <canvas id="specialtyChart"></canvas>
+        </div>
+        <div class="chart-description">* 소아청소년과는 폐업률이 100%를 초과하여 개업보다 폐업이 더 많은 진료과목입니다.</div>
+    </div>
+
+    <footer>
+        <p>© 2025 의료기관 통계 분석</p>
+    </footer>
+
+    <script>
+        // 지역별 폐업률 데이터 (2023년)
+        const regionalData = [
+            { region: '전남', rate: 110.6, category: '지방' },
+            { region: '울산', rate: 108.7, category: '지방' },
+            { region: '충북', rate: 97.6, category: '지방' },
+            { region: '경남', rate: 89.2, category: '지방' },
+            { region: '전북', rate: 88.5, category: '지방' },
+            { region: '광주', rate: 83.6, category: '지방' },
+            { region: '서울', rate: 68.3, category: '수도권' },
+            { region: '경기', rate: 65.3, category: '수도권' },
+            { region: '인천', rate: 60.8, category: '수도권' }
+        ].sort((a, b) => b.rate - a.rate);
+
+        // 의원급 개폐업 격차(2020~2024년) 데이터
+        const clinicData = [
+            { region: '전남', rate: 90.3, category: '지방' },
+            { region: '경북', rate: 81.9, category: '지방' },
+            { region: '충북', rate: 77.2, category: '지방' },
+            { region: '경남', rate: 75.7, category: '지방' },
+            { region: '서울', rate: 52.8, category: '수도권' },
+            { region: '인천', rate: 49.6, category: '수도권' },
+            { region: '경기', rate: 45.1, category: '수도권' }
+        ].sort((a, b) => b.rate - a.rate);
+
+        // 진료과목별 개폐업 현황(2020~2024년) 데이터
+        const specialtyData = [
+            { specialty: '소아청소년과', rate: 104.9 },
+            { specialty: '산부인과', rate: 88.3 },
+            { specialty: '정형외과', rate: 39.6 },
+            { specialty: '내과', rate: 34.9 },
+            { specialty: '신경과', rate: 17.5 },
+            { specialty: '정신건강의학과', rate: 15.1 }
+        ].sort((a, b) => b.rate - a.rate);
+
+        // 차트 생성 함수
+        function createRegionalChart() {
+            const ctx = document.getElementById('regionalChart').getContext('2d');
+            const colors = regionalData.map(item => item.category === '지방' ? '#FF6B6B' : '#4D96FF');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: regionalData.map(item => item.region),
+                    datasets: [{
+                        label: '폐업률(%)',
+                        data: regionalData.map(item => item.rate),
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 120,
+                            title: {
+                                display: true,
+                                text: '폐업률(%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createClinicChart() {
+            const ctx = document.getElementById('clinicChart').getContext('2d');
+            const colors = clinicData.map(item => item.category === '지방' ? '#FF6B6B' : '#4D96FF');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: clinicData.map(item => item.region),
+                    datasets: [{
+                        label: '폐업률(%)',
+                        data: clinicData.map(item => item.rate),
+                        backgroundColor: colors,
+                        borderColor: colors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '폐업률(%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createSpecialtyChart() {
+            const ctx = document.getElementById('specialtyChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: specialtyData.map(item => item.specialty),
+                    datasets: [{
+                        label: '폐업률(%)',
+                        data: specialtyData.map(item => item.rate),
+                        backgroundColor: '#82CA9D',
+                        borderColor: '#82CA9D',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 120,
+                            title: {
+                                display: true,
+                                text: '폐업률(%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 페이지 로드 시 차트 생성
+        window.onload = function() {
+            createRegionalChart();
+            createClinicChart();
+            createSpecialtyChart();
+        };
+    </script>
+</body>
+</html>
