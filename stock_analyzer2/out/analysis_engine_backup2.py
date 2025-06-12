@@ -5,7 +5,7 @@ Analysis Engine Module
 기술적 분석 엔진 - 매매 시점 분석, SP500 비교, 신뢰구간 계산
 
 Author: AI Assistant & User
-Version: 2.1.1 - 에러 수정 완료
+Version: 2.1.0
 """
 
 import pandas as pd
@@ -14,7 +14,6 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import logging
 from .utils import Logger
-from pathlib import Path
 
 
 class AnalysisEngine:
@@ -25,75 +24,53 @@ class AnalysisEngine:
         self.sp500_data = None
         self.sp500_cache_time = None
         
-    def analyze_stock(self, data, symbol):
-        """주식 분석 - 호출 순서 수정 완료"""
+    def analyze_stock(self, data, symbol=None):
+        """종합 주식 분석"""
         try:
             if data is None or data.empty:
+                self.logger.warning("No data provided for analysis")
                 return None
             
-            # 날짜 인덱스 표준화
-            data.index = pd.to_datetime(data.index)
-            
-            # 1단계: 기술적 지표 계산 (먼저 계산해야 함)
-            technical_indicators = self._calculate_technical_indicators(data)
-            
-            # 2단계: 신호 생성 (지표를 기반으로)
-            signals = self._generate_signals(data, technical_indicators)
-            
-            # 3단계: 분석 결과 생성 (올바른 순서로)
-            analysis_result = {
-                'recent_stats': self._calculate_recent_stats(data),
-                'confidence_interval': self._calculate_confidence_interval(data),
-                'sp500_comparison': self._compare_with_sp500(data, symbol),
-                'technical_indicators': technical_indicators,
-                'trading_decision': self._analyze_trading_decision(data, technical_indicators, signals)
-            }
-            
-            return analysis_result
-            
-        except Exception as e:
-            self.logger.error(f"Stock analysis failed: {str(e)}")
-            return None
-
-    def _calculate_recent_stats(self, data):
-        """최근 통계 계산 - 누락된 메서드 추가"""
-        try:
-            if len(data) < 3:
-                return None
-            
-            current_price = data['Close'].iloc[-1]
-            
-            # 최근 3일 평균가
-            three_day_avg = data['Close'].tail(3).mean()
-            deviation_pct = ((current_price - three_day_avg) / three_day_avg) * 100
-            
-            # 신호 생성
-            if deviation_pct > 1.0:
-                signal = "강세"
-                description = "현재가가 3일 평균보다 높음"
-            elif deviation_pct < -1.0:
-                signal = "약세"  
-                description = "현재가가 3일 평균보다 낮음"
-            else:
-                signal = "보합"
-                description = "현재가가 3일 평균 근처"
-            
-            # 기본 통계
+            # 기본 지표 계산
             basic_metrics = self._calculate_basic_metrics(data)
             
+            # 기술적 지표 계산
+            indicators = self._calculate_technical_indicators(data)
+            
+            # 3일 평균가 분석
+            three_day_analysis = self._analyze_three_day_average(data)
+            
+            # 95% 신뢰구간 계산
+            confidence_interval = self._calculate_confidence_interval(data)
+            
+            # SP500 비교 분석
+            sp500_comparison = self._compare_with_sp500(data, symbol)
+            
+            # 추세 분석
+            trend_analysis = self._analyze_trend(data)
+            
+            # 매매 신호 생성
+            signals = self._generate_signals(data, indicators)
+            
+            # 매매 결정 분석
+            trading_decision = self._analyze_trading_decision(data, indicators, signals)
+            
             return {
-                'three_day_average': three_day_avg,
-                'current_price': current_price,
-                'deviation_pct': deviation_pct,
-                'signal': signal,
-                'description': description,
-                **basic_metrics
+                'basic_metrics': basic_metrics,
+                'indicators': indicators,
+                'three_day_analysis': three_day_analysis,
+                'confidence_interval': confidence_interval,
+                'sp500_comparison': sp500_comparison,
+                'trend_analysis': trend_analysis,
+                'signals': signals,
+                'trading_decision': trading_decision,
+                'timestamp': datetime.now()
             }
             
         except Exception as e:
-            self.logger.error(f"Recent stats calculation failed: {e}")
+            self.logger.error(f"Stock analysis failed: {e}")
             return None
-
+    
     def _analyze_three_day_average(self, data):
         """최근 3일 평균가 분석"""
         try:
@@ -183,68 +160,98 @@ class AnalysisEngine:
             return None
     
     def _compare_with_sp500(self, data, symbol):
-        """SP500 비교 분석 - datetime 처리 개선"""
+        """SP500과 비교 분석"""
         try:
-            # S&P 500 데이터 로드
-            sp500_data = self._load_sp500_data()
+            if len(data) < 30:
+                return None
+            
+            # SP500 데이터 가져오기
+            sp500_data = self._get_sp500_data()
             if sp500_data is None or sp500_data.empty:
                 return None
             
-            # 날짜 인덱스 표준화
-            sp500_data.index = pd.to_datetime(sp500_data.index)
-            data.index = pd.to_datetime(data.index)
+            # 같은 기간 맞추기
+            start_date = data.index[0]
+            sp500_period = sp500_data[sp500_data.index >= start_date]
             
-            # 공통 기간 찾기
-            start_date = max(data.index.min(), sp500_data.index.min())
-            end_date = min(data.index.max(), sp500_data.index.max())
+            if len(sp500_period) < 10:
+                return None
             
-            # 공통 기간의 데이터 추출
-            stock_data = data.loc[start_date:end_date]
-            sp500_subset = sp500_data.loc[start_date:end_date]
+            # 수익률 계산
+            stock_returns = data['Close'].pct_change().dropna()
+            sp500_returns = sp500_period['Close'].pct_change().dropna()
             
-            if len(stock_data) < 2 or len(sp500_subset) < 2:
+            # 기간 맞추기
+            min_length = min(len(stock_returns), len(sp500_returns))
+            if min_length < 10:
                 return None
                 
-            # 수익률 계산
-            stock_returns = stock_data['Close'].pct_change().fillna(0)
-            sp500_returns = sp500_subset['Close'].pct_change().fillna(0)
+            stock_returns = stock_returns.tail(min_length)
+            sp500_returns = sp500_returns.tail(min_length)
             
-            # 상대 수익률 계산
-            relative_performance = ((1 + stock_returns).cumprod()[-1] - 1) * 100
-            sp500_performance = ((1 + sp500_returns).cumprod()[-1] - 1) * 100
+            # 누적 수익률
+            stock_cumulative = (1 + stock_returns).cumprod().iloc[-1] - 1
+            sp500_cumulative = (1 + sp500_returns).cumprod().iloc[-1] - 1
+            
+            # 상대 성과
+            relative_performance = stock_cumulative - sp500_cumulative
+            
+            # 베타 계산
+            beta = np.cov(stock_returns, sp500_returns)[0][1] / np.var(sp500_returns)
+            
+            # 상관관계
+            correlation = np.corrcoef(stock_returns, sp500_returns)[0][1]
+            
+            # 성과 평가
+            if relative_performance > 0.05:  # 5% 이상 우수
+                performance_rating = "🎯 우수"
+            elif relative_performance > 0:
+                performance_rating = "🔵 양호"
+            elif relative_performance > -0.05:
+                performance_rating = "🟡 유사"
+            else:
+                performance_rating = "🔴 부진"
             
             return {
-                'relative_performance': relative_performance - sp500_performance,
-                'outperforming': relative_performance > sp500_performance,
-                'stock_performance': relative_performance,
-                'sp500_performance': sp500_performance
+                'stock_return': stock_cumulative,
+                'sp500_return': sp500_cumulative,
+                'relative_performance': relative_performance,
+                'relative_performance_pct': relative_performance * 100,
+                'beta': beta,
+                'correlation': correlation,
+                'performance_rating': performance_rating,
+                'analysis_period_days': min_length
             }
             
         except Exception as e:
-            self.logger.error(f"SP500 comparison failed: {str(e)}")
+            self.logger.error(f"SP500 comparison failed: {e}")
             return None
     
-    def _load_sp500_data(self):
-        """S&P 500 데이터 로드 - datetime 처리 개선"""
+    def _get_sp500_data(self):
+        """SP500 데이터 가져오기 (캐시 적용)"""
         try:
-            # S&P 500 데이터 파일 경로
-            sp500_file = Path('data/SP500.csv')
+            # 캐시 확인 (1시간마다 갱신)
+            if (self.sp500_data is not None and 
+                self.sp500_cache_time is not None and 
+                datetime.now() - self.sp500_cache_time < timedelta(hours=1)):
+                return self.sp500_data
             
-            if not sp500_file.exists():
-                return None
-                
-            # datetime_format 명시적 지정
-            sp500_data = pd.read_csv(sp500_file, index_col=0, parse_dates=True)
-            sp500_data.index = pd.to_datetime(sp500_data.index)
+            # 새로운 데이터 다운로드
+            sp500 = yf.download('^GSPC', period='1y', progress=False)
+            if not sp500.empty:
+                self.sp500_data = sp500
+                self.sp500_cache_time = datetime.now()
+                self.logger.info("SP500 data updated successfully")
+                return sp500
             
-            return sp500_data
+            return None
             
         except Exception as e:
-            self.logger.error(f"SP500 data loading failed: {str(e)}")
+            self.logger.error(f"SP500 data download failed: {e}")
             return None
     
     def _analyze_trading_decision(self, data, indicators, signals):
-        """매매 결정 분석 - 매개변수 순서 수정 완료"""
+        """매매 결정 분석"""
         try:
             current_price = data['Close'].iloc[-1]
             

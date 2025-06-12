@@ -532,7 +532,7 @@ Crash Strategy 탭에서 위험 분석을 하세요!"""
         except Exception as e:
             self.error_handler.handle_exception(e, True, "Auto setup")
     
-    # 기존 메서드들 (텍스트 아이콘으로 수정)
+    # 기본 메서드들
     def on_symbol_change(self, *args):
         """종목 변경 시 호출되는 콜백 함수"""
         try:
@@ -621,7 +621,7 @@ Crash Strategy 탭에서 위험 분석을 하세요!"""
             self.error_handler.handle_exception(e, True, "Data download")
     
     def analyze_stock(self):
-        """주식 분석 - 기술적 분석 결과 활용 강화"""
+        """주식 분석"""
         try:
             data = self.data_manager.get_current_data()
             symbol = self.data_manager.get_current_symbol()
@@ -658,49 +658,37 @@ Crash Strategy 탭에서 위험 분석을 하세요!"""
     def _generate_analysis_summary(self, analysis, symbol):
         """분석 결과 요약 생성"""
         try:
+            if not analysis:
+                return f"'{symbol}' 분석이 완료되었습니다!\n자세한 결과는 4개 정보 패널을 확인하세요."
+
             company_name = self.get_company_name(symbol)
-            summary = f"{ICONS['chart']} {company_name} ({symbol}) 분석 완료!\n\n"
+            summary_parts = [
+                f"{ICONS['chart']} {company_name} ({symbol}) 분석 완료!\n"
+            ]
             
             # 매매 결정 요약
-            if 'trading_decision' in analysis and analysis['trading_decision']:
-                decision = analysis['trading_decision']
-                decision_text = self._translate_decision(decision['decision'])
-                confidence_text = self._translate_confidence(decision['confidence'])
+            if decision := analysis.get('trading_decision', {}):
+                decision_text = self._translate_decision(decision.get('decision', 'HOLD'))
+                confidence_text = self._translate_confidence(decision.get('confidence', 'MEDIUM'))
+                reasoning = decision.get('reasoning', '분석 중')
                 
-                summary += f"{ICONS['signal']} 매매 신호: {decision_text}\n"
-                summary += f"{ICONS['chart']} 신뢰도: {confidence_text}\n"
-                summary += f"{ICONS['info']} 근거: {decision['reasoning']}\n\n"
+                summary_parts.extend([
+                    f"{ICONS['signal']} 매매 신호: {decision_text}",
+                    f"{ICONS['chart']} 신뢰도: {confidence_text}",
+                    f"{ICONS['info']} 근거: {reasoning}\n"
+                ])
             
-            # 주요 지표 요약
-            if 'recent_stats' in analysis and analysis['recent_stats']:
-                stats = analysis['recent_stats']
-                summary += f"{ICONS['chart']} 3일 평균 대비: {stats['diff_pct']:+.1f}%\n"
-            
-            if 'confidence_interval' in analysis and analysis['confidence_interval']:
-                ci = analysis['confidence_interval']
-                ci_signal_text = {
-                    'POTENTIAL_BUY': f'{ICONS["success"]} 매수 고려 구간',
-                    'POTENTIAL_SELL': f'{ICONS["error"]} 매도 고려 구간',
-                    'HOLD': f'{ICONS["warning"]} 관망 구간'
-                }.get(ci['signal'], '보합')
-                summary += f"{ICONS['signal']} 신뢰구간: {ci_signal_text}\n"
-            
-            if 'sp500_comparison' in analysis and analysis['sp500_comparison']:
-                sp500 = analysis['sp500_comparison']
-                if sp500['outperforming']:
-                    summary += f"{ICONS['success']} SP500 대비 +{sp500['relative_performance']:.1f}% 우수\n"
-                else:
-                    summary += f"{ICONS['chart']} SP500 대비 {sp500['relative_performance']:.1f}% 부진\n"
-            
-            summary += f"\n{ICONS['chart']} 새로운 4개 패널로 정보가 깔끔하게 정리되었습니다!"
-            summary += f"\n{ICONS['warning']} v2.1: Font Warning이 완전히 해결되었습니다!"
-            return summary
+            summary_parts.extend([
+                f"\n{ICONS['chart']} 새로운 4개 패널로 정보가 깔끔하게 정리되었습니다!",
+                f"{ICONS['warning']} v2.1: Font Warning이 완전히 해결되었습니다!"
+            ])
+
+            return "\n".join(summary_parts)
             
         except Exception as e:
-            self.logger.error(f"Analysis summary generation failed: {e}")
+            self.logger.error(f"Analysis summary generation failed: {str(e)}")
             return f"'{symbol}' 분석이 완료되었습니다!\n자세한 결과는 4개 정보 패널을 확인하세요."
     
-    # 나머지 메서드들은 동일하지만 messagebox에서 텍스트 아이콘 사용
     def calculate_investment(self):
         """투자 계산"""
         try:
@@ -809,11 +797,8 @@ VaR 95%: {risk_result['var_95']:.2f}%
         except Exception as e:
             self.error_handler.handle_exception(e, True, "Risk assessment")
     
-    # 나머지 메서드들... (calculate_cutloss, generate_ai_report 등)
-    # 공간 절약을 위해 주요 변경사항만 포함하고 나머지는 기존과 동일
-    
     def calculate_cutloss(self):
-        """강화된 손절가 계산 - 4가지 폭락 대응 전략 포함"""
+        """강화된 손절가 계산 - 4가지 폭락 대응 전략 상세 표시"""
         try:
             data = self.data_manager.get_current_data()
             symbol = self.data_manager.get_current_symbol()
@@ -828,13 +813,13 @@ VaR 95%: {risk_result['var_95']:.2f}%
             try:
                 avg_price = float(self.avg_price_var.get()) if self.avg_price_var.get() else None
                 position = float(self.position_var.get()) if self.position_var.get() else 0
-                available_cash = 0
+                available_cash = 0  # 추가 현금은 0으로 가정
             except ValueError:
                 avg_price = None
                 position = 0
                 available_cash = 0
             
-            # 새로운 4가지 전략 분석 기능 호출
+            # 4가지 전략 분석 기능 호출
             four_strategy_result = self.crash_analyzer.calculate_four_strategy_analysis(
                 current_price, symbol, avg_price, position, available_cash
             )
@@ -846,45 +831,208 @@ VaR 95%: {risk_result['var_95']:.2f}%
                 # 한국/미국 구분
                 is_korean = DataValidator.is_korean_stock(symbol)
                 
-                # 종합 결과 리포트 생성
-                result_text = f"""{ICONS['warning']} {APP_NAME} v{APP_VERSION} 최적 손절가 계산 & 4가지 폭락 대응 전략
+                company_name = self.get_company_name(symbol)
+                
+                # 🎯 상세 종합 결과 리포트 생성 (첨부 문서 기반)
+                result_text = f"""{ICONS['warning']} {APP_NAME} v{APP_VERSION} - 🚨 폭락 시 손절 전략 비교 분석
 
 {ICONS['warning']} Font Warning 완전 해결 (v2.1)
-{'=' * 70}
-{ICONS['chart']} 분석 정보:
-• 종목: {symbol} ({cutloss_result['asset_type']})
-• 현재가: {format_currency_auto(current_price, symbol)}
-"""
+{'=' * 80}
+
+📊 현재 상황 분석
+{'=' * 40}
+• 종목: {company_name} ({symbol})
+• 자산유형: {cutloss_result['asset_type']}
+• 현재가: {format_currency_auto(current_price, symbol)}"""
                 
                 if avg_price and position > 0:
                     pnl = (current_price - avg_price) * position
                     pnl_pct = ((current_price - avg_price) / avg_price) * 100
-                    result_text += f"• 평단가: {format_currency_auto(avg_price, symbol)}\n"
-                    result_text += f"• 보유량: {position:,.0f}주\n"
-                    result_text += f"• 평가손익: {format_currency_auto(pnl, symbol)} ({pnl_pct:+.2f}%)\n"
+                    crashed_price = four_strategy_result.get('crashed_price', current_price * 0.9)
+                    current_value = position * current_price
+                    crashed_value = position * crashed_price
+                    
+                    result_text += f"""
+• 평단가: {format_currency_auto(avg_price, symbol)}
+• 보유량: {position:,.0f}주
+• 현재 평가액: {format_currency_auto(current_value, symbol)}
+• 평가손익: {format_currency_auto(pnl, symbol)} ({pnl_pct:+.2f}%)
+
+🔥 10% 폭락 시나리오 분석
+{'=' * 40}
+• 10% 폭락 가격: {format_currency_auto(crashed_price, symbol)}
+• 폭락 후 평가액: {format_currency_auto(crashed_value, symbol)}
+• 폭락 손실: {format_currency_auto(current_value - crashed_value, symbol)}
+
+"""
+                    
+                    # 🎯 4가지 전략별 상세 분석 표시
+                    strategies = four_strategy_result.get('strategies', {})
+                    
+                    if strategies:
+                        result_text += f"""🚨 4가지 폭락 대응 전략 상세 분석
+{'=' * 80}
+
+"""
+                        
+                        # 전략 2: 100% 손절 (가장 중요한 전략을 먼저 표시)
+                        if '2_100_percent_cutloss' in strategies:
+                            strategy = strategies['2_100_percent_cutloss']
+                            result_text += f"""🔻 전략 2: 100% 손절 (전량 매도) - 수학적 최적
+{'─' * 60}
+• 설명: {strategy['description']}
+• 손절 주식: {strategy['cutloss_shares']:,.0f}주
+• 확보 현금: {format_currency_auto(strategy['cash_from_sale'], symbol)}
+• 확정 손실: {format_currency_auto(abs(strategy['loss_amount']), symbol)} ({strategy['loss_pct']:.1f}%)
+
+📊 추가 하락 시 재매수 시나리오 (핵심):
+"""
+                            scenarios = strategy.get('scenarios', [])
+                            if scenarios:
+                                result_text += f"""
+{'추가하락률':<8} {'재진입가':<12} {'매수가능주식':<12} {'원래대비':<8} {'증가주식':<10}
+{'-'*60}
+"""
+                                for scenario in scenarios[:12]:  # 핵심 12개만 표시
+                                    decline_pct = scenario['additional_decline_pct']
+                                    reentry_price = scenario['reentry_price']
+                                    buyable_shares = scenario['buyable_shares']
+                                    increase_ratio = scenario['increase_ratio']
+                                    increase_shares = scenario['increase_shares']
+                                    
+                                    if is_korean:
+                                        price_text = f"₩{reentry_price:,.0f}"
+                                    else:
+                                        price_text = f"${reentry_price:.2f}"
+                                    
+                                    result_text += f"{decline_pct:>6.0f}%     {price_text:<12} {buyable_shares:>8,}주      {increase_ratio:>5.1f}배   +{increase_shares:>6,}주\n"
+                            
+                            result_text += f"""
+💪 장점:
+  • 모든 하락 구간에서 수학적으로 최적
+  • 50% 추가 하락 시 2배 주식 확보 (200주 vs 150주 vs 125주)
+  • 추가 하락에 대한 최대 대응력
+
+⚠️ 단점:
+  • 타이밍 리스크 (손절 후 반등 시 기회 상실)
+  • 재진입 심리적 부담
+  • 세금 및 거래비용
+
+"""
+                        
+                        # 전략 3: 50% 손절 (실전 추천)
+                        if '3_50_percent_cutloss' in strategies:
+                            strategy = strategies['3_50_percent_cutloss']
+                            result_text += f"""⚖️ 전략 3: 50% 손절 (절반 매도) - 실전 추천
+{'─' * 60}
+• 설명: {strategy['description']}
+• 손절 주식: {strategy['cutloss_shares']:,.0f}주
+• 보유 주식: {strategy['remaining_shares']:,.0f}주
+• 확보 현금: {format_currency_auto(strategy['cash_from_sale'], symbol)}
+• 확정 손실: {format_currency_auto(abs(strategy['loss_amount']), symbol)} ({strategy['loss_pct']:.1f}%)
+
+📊 주요 하락 시나리오별 총 보유 주식:
+"""
+                            scenarios = strategy.get('scenarios', [])
+                            if scenarios:
+                                key_scenarios = [scenarios[i] for i in [1, 3, 5, 9, 11] if i < len(scenarios)]  # 10%, 20%, 30%, 50%, 60%만
+                                for scenario in key_scenarios:
+                                    decline_pct = scenario['additional_decline_pct']
+                                    total_shares = scenario['total_shares']
+                                    increase_shares = scenario['increase_shares']
+                                    
+                                    result_text += f"  • 추가 {decline_pct:.0f}% 하락: {total_shares:,}주 (원래 대비 +{increase_shares:,}주)\n"
+                            
+                            result_text += f"""
+💪 장점: 리스크 부분 제거, 주가 반등 시 일부 수익 확보
+⚠️ 단점: 기회비용 발생, 복잡한 포지션 관리
+
+"""
                 
-                result_text += f"\n{ICONS['chart']} 기본 권장 손절가:\n"
+                # 시나리오별 최적 전략
+                scenarios_info = four_strategy_result.get('scenarios', {})
+                if scenarios_info:
+                    result_text += f"""🎯 시나리오별 최적 전략 추천
+{'=' * 50}
+• 즉시 반등 (+10%): {scenarios_info.get('immediate_recovery', {}).get('best_strategy', 'N/A')}
+  → {scenarios_info.get('immediate_recovery', {}).get('reason', '')}
+
+• 추가 20% 하락: {scenarios_info.get('continued_decline_20', {}).get('best_strategy', 'N/A')}
+  → {scenarios_info.get('continued_decline_20', {}).get('reason', '')}
+
+• 추가 50% 하락: {scenarios_info.get('continued_decline_50', {}).get('best_strategy', 'N/A')}
+  → {scenarios_info.get('continued_decline_50', {}).get('reason', '')}
+
+• 횡보 지속: {scenarios_info.get('sideways', {}).get('best_strategy', 'N/A')}
+  → {scenarios_info.get('sideways', {}).get('reason', '')}
+
+"""
+                
+                # 기본 손절가 정보
+                result_text += f"""📊 기본 권장 손절가
+{'=' * 40}
+"""
                 
                 for level in cutloss_result['cutloss_levels']:
                     price_text = format_currency_auto(level['price'], symbol)
                     result_text += f"• {level['level']}: {price_text} ({level['description']})\n"
                 
                 absolute_stop_text = format_currency_auto(cutloss_result['absolute_stop'], symbol)
-                result_text += f"\n{ICONS['crash']} 절대 손절선: {absolute_stop_text}\n"
-                result_text += f"{ICONS['info']} 권장사항: {cutloss_result['recommendation']}\n"
+                result_text += f"\n🚨 절대 손절선: {absolute_stop_text}\n"
                 
-                # [계속해서 4가지 전략 분석 결과 추가... 공간 절약을 위해 핵심만]
+                # 레버리지 ETF 특별 주의사항
+                if cutloss_result.get('is_leverage', False):
+                    result_text += f"""
+
+⚡ 레버리지 ETF 특별 고려사항
+{'=' * 50}
+🚨 핵심 원칙:
+• 절대 손절선: 15% (일반 주식보다 엄격)
+• 최대 보유기간: 30일 이내
+• 수학적 최적화보다 리스크 관리 우선
+• 감정적 판단 절대 금지
+"""
+                
+                result_text += f"""
+
+🎯 최종 실전 가이드라인
+{'=' * 80}
+
+📊 핵심 분석 결과:
+• 수학적으로는 100% 손절이 모든 하락 구간에서 최적
+• 실전에서는 50% 손절이 리스크-수익 균형점에서 유리
+
+💡 실전 권장 전략:
+
+🛡️ 보수적 접근법 (추천):
+  1차: 50% 손절 → 현금 확보
+  2차: 추가 20-30% 하락 시 재매수
+  3차: 추가 50% 하락 시 나머지 자금 투입
+
+⚡ 공격적 접근법 (고위험):
+  1차: 100% 손절 → 전액 현금화
+  2차: 추가 40-50% 하락까지 대기
+  3차: 한 번에 대량 매수로 평단가 대폭 절하
+
+{'=' * 80}
+⚠️ 중요: 실제 투자 결정은 정치·경제적 상황, 개인 위험 감수 능력, 
+현금 필요성 등을 종합적으로 고려하여 신중히 결정하시기 바랍니다.
+
+Generated by {APP_NAME} v{APP_VERSION} - Enhanced Crash Analyzer
+분석 시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+Font Warning 완전 해결 (v2.1)
+"""
                 
                 self.crash_results.delete('1.0', tk.END)
                 self.crash_results.insert('1.0', result_text)
                 
                 # 상태 패널 업데이트
                 if position > 0:
-                    status_text = f"4가지 전략 분석 완료\n보유: {position:,.0f}주"
-                    recommendation_text = "상황별 최적 전략\n확인 후 결정"
+                    status_text = f"4가지 전략 분석 완료\n보유: {position:,.0f}주\n수학적 최적: 100% 손절\n실전 추천: 50% 손절"
+                    recommendation_text = f"상세 전략표 확인\n50% 손절 추천\n(리스크-수익 균형)"
                 else:
                     status_text = "기본 손절가 계산 완료\n포지션 정보 입력 필요"
-                    recommendation_text = "평단가/보유량 입력 시\n4가지 전략 분석 가능"
+                    recommendation_text = "평단가/보유량 입력 시\n상세 4가지 전략 표 제공"
                 
                 self.crash_status.config(text=status_text)
                 self.crash_recommendation.config(text=recommendation_text)
@@ -894,216 +1042,6 @@ VaR 95%: {risk_result['var_95']:.2f}%
                 
         except Exception as e:
             self.error_handler.handle_exception(e, True, "Enhanced cutloss calculation")
-    
-    # 나머지 메서드들 (4개 패널 업데이트 등)은 기존과 동일하지만 아이콘만 변경
-    def update_stock_info(self, data, symbol, analysis=None):
-        """주식 정보 업데이트 - 4개 패널로 분리"""
-        try:
-            if data is None or data.empty:
-                self._clear_all_info_panels()
-                return
-            
-            company_name = self.get_company_name(symbol)
-            latest_price = data['Close'].iloc[-1]
-            prev_price = data['Close'].iloc[-2] if len(data) > 1 else latest_price
-            change = latest_price - prev_price
-            change_pct = (change / prev_price) * 100 if prev_price != 0 else 0
-            
-            # 한국/미국 구분해서 화폐 표시
-            is_korean = DataValidator.is_korean_stock(symbol)
-            
-            # 1. 종목 정보 패널 업데이트
-            self._update_stock_info_panel(company_name, symbol, latest_price, change, change_pct, len(data), is_korean)
-            
-            # 2. 포지션 정보 패널 업데이트
-            self._update_position_info_panel(latest_price, is_korean)
-            
-            # 3. 기술적 분석 및 매매 신호 패널 업데이트
-            if analysis is None:
-                # 분석이 제공되지 않은 경우 새로 실행
-                analysis = self.analysis_engine.analyze_stock(data, symbol)
-            
-            if analysis:
-                self._update_technical_info_panel(analysis, is_korean)
-                self._update_signal_info_panel(analysis)
-            else:
-                self.technical_info_label.config(text="분석 실패")
-                self.signal_info_label.config(text="신호 없음")
-            
-        except Exception as e:
-            self.logger.error(f"Stock info update failed: {e}")
-    
-    # 나머지 유틸리티 메서드들도 동일
-    def _clear_all_info_panels(self):
-        """모든 정보 패널 초기화"""
-        self.stock_info_label.config(text="데이터가 없습니다.")
-        self.position_info_label.config(text="포지션 없음")
-        self.technical_info_label.config(text="분석 대기중")
-        self.signal_info_label.config(text="신호 없음")
-    
-    def _update_stock_info_panel(self, company_name, symbol, latest_price, change, change_pct, data_days, is_korean):
-        """1. 종목 정보 패널 업데이트"""
-        try:
-            info_text = f"{company_name}\n({symbol})\n\n"
-            
-            if is_korean:
-                info_text += f"현재가: ₩{latest_price:,.0f}\n"
-                info_text += f"변동: ₩{change:+,.0f}\n"
-                info_text += f"변동률: {change_pct:+.2f}%\n"
-            else:
-                info_text += f"현재가: ${latest_price:.2f}\n"
-                info_text += f"변동: ${change:+.2f}\n"
-                info_text += f"변동률: {change_pct:+.2f}%\n"
-            
-            info_text += f"데이터: {data_days}일"
-            
-            self.stock_info_label.config(text=info_text)
-            
-        except Exception as e:
-            self.logger.error(f"Stock info panel update failed: {e}")
-    
-    def _update_position_info_panel(self, latest_price, is_korean):
-        """2. 포지션 정보 패널 업데이트"""
-        try:
-            try:
-                avg_price = float(self.avg_price_var.get()) if self.avg_price_var.get() else None
-                position = float(self.position_var.get()) if self.position_var.get() else 0
-            except ValueError:
-                avg_price = None
-                position = 0
-            
-            if avg_price and position > 0:
-                pnl = (latest_price - avg_price) * position
-                pnl_pct = ((latest_price - avg_price) / avg_price) * 100
-                
-                if is_korean:
-                    position_text = f"평단가:\n₩{avg_price:,.0f}\n\n"
-                    position_text += f"보유량:\n{position:,.0f}주\n\n"
-                    position_text += f"평가손익:\n₩{pnl:+,.0f}\n"
-                    position_text += f"({pnl_pct:+.2f}%)"
-                else:
-                    position_text = f"평단가:\n${avg_price:.2f}\n\n"
-                    position_text += f"보유량:\n{position:,.0f}주\n\n"
-                    position_text += f"평가손익:\n${pnl:+,.2f}\n"
-                    position_text += f"({pnl_pct:+.2f}%)"
-                
-                self.position_info_label.config(text=position_text)
-            else:
-                self.position_info_label.config(text="포지션 정보를\n입력해주세요")
-                
-        except Exception as e:
-            self.logger.error(f"Position info panel update failed: {e}")
-    
-    def _update_technical_info_panel(self, analysis, is_korean):
-        """3. 기술적 분석 패널 업데이트"""
-        try:
-            tech_text = ""
-            
-            # 최근 3일 평균가 정보
-            if 'recent_stats' in analysis and analysis['recent_stats']:
-                stats = analysis['recent_stats']
-                avg_3_days = stats['avg_3_days']
-                diff_pct = stats['diff_pct']
-                
-                if is_korean:
-                    tech_text += f"3일평균:\n₩{avg_3_days:,.0f}\n"
-                else:
-                    tech_text += f"3일평균:\n${avg_3_days:.2f}\n"
-                
-                tech_text += f"({diff_pct:+.1f}%)\n\n"
-            
-            # 95% 신뢰구간 정보
-            if 'confidence_interval' in analysis and analysis['confidence_interval']:
-                ci = analysis['confidence_interval']
-                
-                if is_korean:
-                    tech_text += f"신뢰구간:\n₩{ci['lower_bound']:,.0f}~\n₩{ci['upper_bound']:,.0f}\n\n"
-                else:
-                    tech_text += f"신뢰구간:\n${ci['lower_bound']:.2f}~\n${ci['upper_bound']:.2f}\n\n"
-                
-                # 포지션 신호
-                if ci['signal'] == 'POTENTIAL_BUY':
-                    tech_text += f"{ICONS['success']} 매수고려구간"
-                elif ci['signal'] == 'POTENTIAL_SELL':
-                    tech_text += f"{ICONS['error']} 매도고려구간"
-                else:
-                    tech_text += f"{ICONS['warning']} 관망구간"
-            
-            # SP500 비교 정보
-            if 'sp500_comparison' in analysis and analysis['sp500_comparison']:
-                sp500 = analysis['sp500_comparison']
-                relative_perf = sp500['relative_performance']
-                
-                tech_text += f"\n\nSP500대비:\n"
-                if sp500['outperforming']:
-                    tech_text += f"{ICONS['signal']} +{relative_perf:.1f}% 우수"
-                else:
-                    tech_text += f"{ICONS['chart']} {relative_perf:.1f}% 부진"
-            
-            if not tech_text:
-                tech_text = "분석 데이터\n부족"
-            
-            self.technical_info_label.config(text=tech_text)
-            
-        except Exception as e:
-            self.logger.error(f"Technical info panel update failed: {e}")
-            self.technical_info_label.config(text="분석 오류")
-    
-    def _update_signal_info_panel(self, analysis):
-        """4. 매매 신호 패널 업데이트"""
-        try:
-            signal_text = ""
-            
-            # 매매 결정 정보
-            if 'trading_decision' in analysis and analysis['trading_decision']:
-                decision = analysis['trading_decision']
-                
-                decision_text = self._translate_decision(decision['decision'])
-                confidence_text = self._translate_confidence(decision['confidence'])
-                
-                signal_text += f"{decision_text}\n\n"
-                signal_text += f"신뢰도: {confidence_text}\n\n"
-                signal_text += f"근거:\n{decision['reasoning']}"
-                
-                # RSI 추가 정보
-                if 'technical_indicators' in analysis and 'rsi' in analysis['technical_indicators']:
-                    rsi = analysis['technical_indicators']['rsi']
-                    signal_text += f"\n\nRSI: {rsi:.1f}"
-                    
-                    if rsi < 30:
-                        signal_text += "\n(과매도)"
-                    elif rsi > 70:
-                        signal_text += "\n(과매수)"
-                    else:
-                        signal_text += "\n(중립)"
-            else:
-                signal_text = "매매신호\n분석중"
-            
-            self.signal_info_label.config(text=signal_text)
-            
-        except Exception as e:
-            self.logger.error(f"Signal info panel update failed: {e}")
-            self.signal_info_label.config(text="신호 오류")
-    
-    def _translate_decision(self, decision):
-        """매매 결정 번역"""
-        translations = {
-            'STRONG_BUY': f'{ICONS["success"]} 적극매수',
-            'BUY': f'{ICONS["success"]} 매수',
-            'HOLD': f'{ICONS["warning"]} 보유',
-            'SELL': f'{ICONS["error"]} 매도',
-            'STRONG_SELL': f'{ICONS["crash"]} 적극매도'
-        }
-        return translations.get(decision, decision)
-    
-    def _translate_confidence(self, confidence):
-        """신뢰도 번역"""
-        translations = {
-            'HIGH': '높음',
-            'MEDIUM': '보통',
-            'LOW': '낮음'
-        }
-        return translations.get(confidence, confidence)
     
     def analyze_crash_situation(self):
         """폭락 상황 분석"""
@@ -1168,40 +1106,15 @@ VaR 95%: {risk_result['var_95']:.2f}%
                     result_text += "• 즉시 15% 손절선 점검 필요\n"
                     result_text += "• 30일 이상 장기 보유 절대 금지\n"
                     result_text += "• 섹터 집중 위험 (반도체 업계 전반적 영향)\n"
-                    result_text += f"\n{ICONS['crash']} 레버리지 ETF는 수학적 최적화보다 리스크 관리가 우선입니다!\n"
                 
                 result_text += f"""
 
-{'=' * 70}
 {ICONS['info']} 투자 결정 가이드라인
-{'=' * 70}
+{'=' * 50}
 
-{ICONS['info']} **어떤 전략을 선택해야 할까요?**
-
-1. **정치·경제적 상황 분석**이 가장 중요합니다:
-   • 현재 시장 전반적 상황 (금리, 정책, 경제지표)
-   • 해당 섹터의 특별한 이슈나 호재/악재
-   • 국제 정세 및 무역 분쟁 등의 영향
-
-2. **개인 투자 성향**:
-   • 리스크 감수 능력
-   • 투자 기간 (단기 vs 장기)
-   • 다른 투자처의 현금 필요성
-
-3. **기술적 지표 확인**:
-   • RSI, MACD 등 과매도/과매수 신호
-   • 이동평균선 지지/저항 레벨
-   • 거래량 패턴 분석
-
-4. **객관적 판단 기준**:
-   • 감정적 결정 배제
-   • 미리 정한 손절선 준수
-   • 분산투자를 통한 리스크 관리
-
-{ICONS['copy']} **AI 투자 자문 추천**: 
-   현재 상황과 위 분석 결과를 AI에게 제공하여
-   정치·경제적 상황을 종합한 전문 조언을 받아보세요!
-   (Crash Strategy 탭의 'AI 자문 리포트' 버튼 이용)
+현재 상황과 위 분석 결과를 AI에게 제공하여
+정치·경제적 상황을 종합한 전문 조언을 받아보세요!
+(Crash Strategy 탭의 'AI 자문 리포트' 버튼 이용)
 
 {ICONS['chart']} 분석 시간: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 {ICONS['warning']} v2.1: Font Warning 완전 해결됨
@@ -1210,25 +1123,14 @@ VaR 95%: {risk_result['var_95']:.2f}%
                 self.crash_results.delete('1.0', tk.END)
                 self.crash_results.insert('1.0', result_text)
                 
-                # 상태 패널 업데이트
-                if position > 0:
-                    status_text = f"4가지 전략 분석 완료\n보유: {position:,.0f}주"
-                    recommendation_text = "상황별 최적 전략\n확인 후 결정"
-                else:
-                    status_text = "기본 손절가 계산 완료\n포지션 정보 입력 필요"
-                    recommendation_text = "평단가/보유량 입력 시\n4가지 전략 분석 가능"
-                
-                self.crash_status.config(text=status_text)
-                self.crash_recommendation.config(text=recommendation_text)
-                
             else:
-                messagebox.showerror(f"{ICONS['error']}", "손절가 계산 실패")
+                messagebox.showerror(f"{ICONS['error']}", "폭락 분석 실패")
                 
         except Exception as e:
-            self.error_handler.handle_exception(e, True, "Enhanced cutloss calculation")
+            self.error_handler.handle_exception(e, True, "Crash situation analysis")
     
     def generate_ai_report(self):
-        """강화된 AI 자문 리포트 생성 - 4가지 전략 분석 및 기술적 분석 포함"""
+        """강화된 AI 자문 리포트 생성"""
         try:
             data = self.data_manager.get_current_data()
             symbol = self.data_manager.get_current_symbol()
@@ -1342,25 +1244,204 @@ VaR 95%: {risk_result['var_95']:.2f}%
                 tk.Button(button_frame, text=f"{ICONS['close']} 닫기", 
                          command=report_window.destroy, font=('Segoe UI', 11)).pack(side=tk.RIGHT)
                 
-                # 추가 안내
-                info_frame = tk.Frame(main_frame)
-                info_frame.pack(fill=tk.X, pady=(10, 0))
-                
-                info_text = f"""{ICONS['info']} 사용 팁: 
-• 리포트를 Claude, ChatGPT 등 AI에게 제공하여 현재 정치·경제적 상황을 고려한 투자 조언 요청
-• 특히 4가지 전략 중 어떤 것이 현재 시장 상황에 가장 적합한지 문의
-• 감정적 판단을 배제한 객관적이고 실행 가능한 구체적 조언 요청
-{ICONS['warning']} v2.1: Font Warning이 완전히 해결되어 더욱 안정적인 환경 제공"""
-                
-                tk.Label(info_frame, text=info_text, 
-                        font=('Segoe UI', 9), foreground='#666666', 
-                        wraplength=900, justify=tk.LEFT).pack()
-                
             else:
                 messagebox.showerror(f"{ICONS['error']}", "리포트 생성 실패")
                 
         except Exception as e:
-            self.error_handler.handle_exception(e, True, "Enhanced AI report generation")
+            self.error_handler.handle_exception(e, True, "AI report generation")
+    
+    # 정보 패널 업데이트 메서드들
+    def update_stock_info(self, data, symbol, analysis=None):
+        """주식 정보 업데이트 - 4개 패널로 분리"""
+        try:
+            if data is None or data.empty:
+                self._clear_all_info_panels()
+                return
+            
+            company_name = self.get_company_name(symbol)
+            latest_price = data['Close'].iloc[-1]
+            prev_price = data['Close'].iloc[-2] if len(data) > 1 else latest_price
+            change = latest_price - prev_price
+            change_pct = (change / prev_price) * 100 if prev_price != 0 else 0
+            
+            # 한국/미국 구분해서 화폐 표시
+            is_korean = DataValidator.is_korean_stock(symbol)
+            
+            # 1. 종목 정보 패널 업데이트
+            self._update_stock_info_panel(company_name, symbol, latest_price, change, change_pct, len(data), is_korean)
+            
+            # 2. 포지션 정보 패널 업데이트
+            self._update_position_info_panel(latest_price, is_korean)
+            
+            # 3. 기술적 분석 및 매매 신호 패널 업데이트
+            if analysis is None:
+                # 분석이 제공되지 않은 경우 새로 실행
+                analysis = self.analysis_engine.analyze_stock(data, symbol)
+            
+            if analysis:
+                self._update_technical_info_panel(analysis, is_korean)
+                self._update_signal_info_panel(analysis)
+            else:
+                self.technical_info_label.config(text="분석 실패")
+                self.signal_info_label.config(text="신호 없음")
+            
+        except Exception as e:
+            self.logger.error(f"Stock info update failed: {e}")
+    
+    def _clear_all_info_panels(self):
+        """모든 정보 패널 초기화"""
+        self.stock_info_label.config(text="데이터가 없습니다.")
+        self.position_info_label.config(text="포지션 없음")
+        self.technical_info_label.config(text="분석 대기중")
+        self.signal_info_label.config(text="신호 없음")
+    
+    def _update_stock_info_panel(self, company_name, symbol, latest_price, change, change_pct, data_days, is_korean):
+        """1. 종목 정보 패널 업데이트"""
+        try:
+            info_text = f"{company_name}\n({symbol})\n\n"
+            
+            if is_korean:
+                info_text += f"현재가: ₩{latest_price:,.0f}\n"
+                info_text += f"변동: ₩{change:+,.0f}\n"
+                info_text += f"변동률: {change_pct:+.2f}%\n"
+            else:
+                info_text += f"현재가: ${latest_price:.2f}\n"
+                info_text += f"변동: ${change:+.2f}\n"
+                info_text += f"변동률: {change_pct:+.2f}%\n"
+            
+            info_text += f"데이터: {data_days}일"
+            
+            self.stock_info_label.config(text=info_text)
+            
+        except Exception as e:
+            self.logger.error(f"Stock info panel update failed: {e}")
+    
+    def _update_position_info_panel(self, latest_price, is_korean):
+        """2. 포지션 정보 패널 업데이트"""
+        try:
+            try:
+                avg_price = float(self.avg_price_var.get()) if self.avg_price_var.get() else None
+                position = float(self.position_var.get()) if self.position_var.get() else 0
+            except ValueError:
+                avg_price = None
+                position = 0
+            
+            if avg_price and position > 0:
+                pnl = (latest_price - avg_price) * position
+                pnl_pct = ((latest_price - avg_price) / avg_price) * 100
+                
+                if is_korean:
+                    position_text = f"평단가:\n₩{avg_price:,.0f}\n\n"
+                    position_text += f"보유량:\n{position:,.0f}주\n\n"
+                    position_text += f"평가손익:\n₩{pnl:+,.0f}\n"
+                    position_text += f"({pnl_pct:+.2f}%)"
+                else:
+                    position_text = f"평단가:\n${avg_price:.2f}\n\n"
+                    position_text += f"보유량:\n{position:,.0f}주\n\n"
+                    position_text += f"평가손익:\n${pnl:+,.2f}\n"
+                    position_text += f"({pnl_pct:+.2f}%)"
+                
+                self.position_info_label.config(text=position_text)
+            else:
+                self.position_info_label.config(text="포지션 정보를\n입력해주세요")
+                
+        except Exception as e:
+            self.logger.error(f"Position info panel update failed: {e}")
+    
+    def _update_technical_info_panel(self, analysis, is_korean):
+        """3. 기술적 분석 패널 업데이트"""
+        try:
+            if not analysis:
+                self.technical_info_label.config(text="분석 데이터\n부족")
+                return
+
+            tech_text = []
+
+            # 최근 3일 평균가 정보
+            if stats := analysis.get('recent_stats', {}):
+                avg_3_days = stats.get('three_day_average', 0)
+                diff_pct = stats.get('deviation_pct', 0)
+                
+                if is_korean:
+                    tech_text.append(f"3일평균:\n₩{avg_3_days:,.0f}")
+                else:
+                    tech_text.append(f"3일평균:\n${avg_3_days:.2f}")
+                tech_text.append(f"({diff_pct:+.1f}%)\n")
+
+            # 신뢰구간 정보
+            if ci := analysis.get('confidence_interval', {}):
+                if ci and 'upper_bound' in ci and 'lower_bound' in ci:
+                    if is_korean:
+                        tech_text.append(f"신뢰구간:\n₩{ci['lower_bound']:,.0f}~\n₩{ci['upper_bound']:,.0f}\n")
+                    else:
+                        tech_text.append(f"신뢰구간:\n${ci['lower_bound']:.2f}~\n${ci['upper_bound']:.2f}\n")
+                    
+                    # 포지션 신호
+                    signal_text = ci.get('position_signal', '보합')
+                    tech_text.append(signal_text.replace('🟢', '[매수]').replace('🔴', '[매도]').replace('🟡', '[관망]'))
+
+            final_text = "\n".join(tech_text) if tech_text else "분석 데이터\n부족"
+            self.technical_info_label.config(text=final_text)
+            
+        except Exception as e:
+            self.logger.error(f"Technical info panel update failed: {str(e)}")
+            self.technical_info_label.config(text="분석 오류")
+    
+    def _update_signal_info_panel(self, analysis):
+        """4. 매매 신호 패널 업데이트"""
+        try:
+            signal_text = ""
+            
+            # 매매 결정 정보
+            if 'trading_decision' in analysis and analysis['trading_decision']:
+                decision = analysis['trading_decision']
+                
+                decision_text = self._translate_decision(decision['decision'])
+                confidence_text = self._translate_confidence(decision['confidence'])
+                
+                signal_text += f"{decision_text}\n\n"
+                signal_text += f"신뢰도: {confidence_text}\n\n"
+                signal_text += f"근거:\n{decision['reasoning']}"
+                
+                # RSI 추가 정보
+                if 'technical_indicators' in analysis and 'rsi' in analysis['technical_indicators']:
+                    rsi = analysis['technical_indicators']['rsi']
+                    signal_text += f"\n\nRSI: {rsi:.1f}"
+                    
+                    if rsi < 30:
+                        signal_text += "\n(과매도)"
+                    elif rsi > 70:
+                        signal_text += "\n(과매수)"
+                    else:
+                        signal_text += "\n(중립)"
+            else:
+                signal_text = "매매신호\n분석중"
+            
+            self.signal_info_label.config(text=signal_text)
+            
+        except Exception as e:
+            self.logger.error(f"Signal info panel update failed: {e}")
+            self.signal_info_label.config(text="신호 오류")
+    
+    def _translate_decision(self, decision):
+        """매매 결정 번역"""
+        translations = {
+            'STRONG_BUY': f'{ICONS["success"]} 적극매수',
+            'BUY': f'{ICONS["success"]} 매수',
+            'HOLD': f'{ICONS["warning"]} 보유',
+            'SELL': f'{ICONS["error"]} 매도',
+            'STRONG_SELL': f'{ICONS["crash"]} 적극매도'
+        }
+        return translations.get(decision, decision)
+    
+    def _translate_confidence(self, confidence):
+        """신뢰도 번역"""
+        translations = {
+            'HIGH': '높음',
+            'MEDIUM': '보통',
+            'LOW': '낮음'
+        }
+        return translations.get(confidence, confidence)
     
     # 유틸리티 메서드들
     def refresh_files_list(self):
@@ -1373,7 +1454,7 @@ VaR 95%: {risk_result['var_95']:.2f}%
         except Exception as e:
             self.logger.error(f"Files list refresh failed: {e}")
     
-    def load_selected_file(self, event):
+    def load_selected_file(self, event=None):
         """선택된 파일 로드"""
         try:
             selection = self.files_listbox.curselection()
@@ -1395,8 +1476,10 @@ VaR 95%: {risk_result['var_95']:.2f}%
                     except:
                         avg_price = None
                     
-                    self.chart_manager.update_chart(result['data'], file_info['symbol'], avg_price)
-                    self.logger.info(f"File loaded: {file_info['filename']}")
+                    company_name = self.get_company_name(file_info['symbol'])
+                    self.chart_manager.update_chart(result['data'], file_info['symbol'], 
+                                                  avg_price, company_name)
+                    self.logger.info(f"File loaded: {file_info['filepath']}")
                 else:
                     messagebox.showerror(f"{ICONS['error']}", result['message'])
                     

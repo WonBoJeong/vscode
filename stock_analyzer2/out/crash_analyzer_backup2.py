@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-1Bo's Plan - Enhanced Crash Analyzer Module v2.1.1
-폭락장 대응 분석 모듈 (4가지 전략 분석 및 AI 자문 강화) - 키 에러 수정
+1Bo's Plan - Enhanced Crash Analyzer Module v2.1
+폭락장 대응 분석 모듈 (4가지 전략 분석 및 AI 자문 강화)
 
 Author: AI Assistant & User  
-Version: 2.1.1 - AI 리포트 키 에러 수정 완료
+Version: 2.1.0 - 4가지 폭락 대응 전략 분석, AI 자문 리포트 강화
 """
 
 import numpy as np
@@ -468,7 +468,7 @@ class CrashAnalyzer:
             return None
     
     def generate_comprehensive_ai_report(self, analysis_result, technical_analysis=None, portfolio_info=None, four_strategy_result=None):
-        """🎯 종합 AI 자문용 리포트 생성 - 키 에러 수정 완료"""
+        """🎯 종합 AI 자문용 리포트 생성 - 4가지 전략 분석 포함"""
         try:
             if not analysis_result:
                 return "분석 결과가 없습니다."
@@ -556,76 +556,73 @@ class CrashAnalyzer:
                         report += f"""
 • MACD: {macd_trend} 추세"""
                 
-                # 최근 3일 평균 분석 - 🔧 키 에러 수정
+                # 최근 3일 평균 분석
                 if 'recent_stats' in technical_analysis:
                     stats = technical_analysis['recent_stats']
                     
-                    # 🔧 수정: 올바른 키 사용
-                    if 'three_day_average' in stats:
-                        # 수정: 화폐 포맷팅
-                        if is_korean:
-                            avg_3_days_text = f"₩{stats['three_day_average']:,.0f}"
-                        else:
-                            avg_3_days_text = f"${stats['three_day_average']:.2f}"
-                        
-                        trend_text = '상승추세' if stats['deviation_pct'] > 0 else '하락추세' if stats['deviation_pct'] < 0 else '보합'
-                        
-                        report += f"""
+                    # 수정: 화폐 포맷팅
+                    if is_korean:
+                        avg_3_days_text = f"₩{stats['avg_3_days']:,.0f}"
+                    else:
+                        avg_3_days_text = f"${stats['avg_3_days']:.2f}"
+                    
+                    trend_text = '상승추세' if stats['diff_pct'] > 0 else '하락추세' if stats['diff_pct'] < 0 else '보합'
+                    
+                    report += f"""
 • 3일 평균가: {avg_3_days_text}
-• 현재가 대비: {stats['deviation_pct']:+.1f}% ({trend_text})"""
+• 현재가 대비: {stats['diff_pct']:+.1f}% ({trend_text})"""
                 
                 # 95% 신뢰구간 분석
                 if 'confidence_interval' in technical_analysis:
                     ci = technical_analysis['confidence_interval']
+                    signal_text = {
+                        'POTENTIAL_BUY': '매수 고려 구간',
+                        'POTENTIAL_SELL': '매도 고려 구간',
+                        'HOLD': '관망 구간'
+                    }.get(ci['signal'], '보합')
                     
-                    # 🔧 수정: 신호 키 확인 후 적절한 처리
-                    signal_text = "보합"
-                    if ci and 'position_signal' in ci:
-                        signal_text = ci['position_signal']
+                    # 수정: 화폐 포맷팅
+                    if is_korean:
+                        ci_lower_text = f"₩{ci['lower_bound']:,.0f}"
+                        ci_upper_text = f"₩{ci['upper_bound']:,.0f}"
+                    else:
+                        ci_lower_text = f"${ci['lower_bound']:.2f}"
+                        ci_upper_text = f"${ci['upper_bound']:.2f}"
                     
-                    if ci and 'upper_bound' in ci and 'lower_bound' in ci:
-                        # 수정: 화폐 포맷팅
-                        if is_korean:
-                            ci_lower_text = f"₩{ci['lower_bound']:,.0f}"
-                            ci_upper_text = f"₩{ci['upper_bound']:,.0f}"
-                        else:
-                            ci_lower_text = f"${ci['lower_bound']:.2f}"
-                            ci_upper_text = f"${ci['upper_bound']:.2f}"
-                        
-                        report += f"""
+                    report += f"""
 • 95% 신뢰구간: {ci_lower_text} ~ {ci_upper_text}
 • 구간 분석: {signal_text}"""
                 
                 # SP500 비교 (미국 주식인 경우)
                 if not is_korean and 'sp500_comparison' in technical_analysis:
                     sp500 = technical_analysis['sp500_comparison']
-                    if sp500:
-                        performance_text = f"+{sp500['relative_performance']:.1f}% 우수" if sp500.get('outperforming', False) else f"{sp500.get('relative_performance', 0):.1f}% 부진"
-                        report += f"""
-• SP500 대비 성과: {performance_text}"""
+                    performance_text = f"+{sp500['relative_performance']:.1f}% 우수" if sp500['outperforming'] else f"{sp500['relative_performance']:.1f}% 부진"
+                    report += f"""
+• SP500 대비 성과: {performance_text}
+• 베타 계수: {sp500.get('beta', 'N/A')}
+• 상관관계: {sp500.get('correlation', 'N/A')}"""
                 
                 # 매매 결정 분석
                 if 'trading_decision' in technical_analysis:
                     decision = technical_analysis['trading_decision']
-                    if decision:
-                        decision_text = {
-                            'STRONG_BUY': '🚀 적극매수',
-                            'BUY': '💚 매수',
-                            'HOLD': '🟡 보유',
-                            'SELL': '🔴 매도',
-                            'STRONG_SELL': '💥 적극매도'
-                        }.get(decision.get('decision', ''), decision.get('decision', '보합'))
-                        
-                        confidence_text = {
-                            'HIGH': '높음',
-                            'MEDIUM': '보통',
-                            'LOW': '낮음'
-                        }.get(decision.get('confidence', ''), decision.get('confidence', '보통'))
-                        
-                        report += f"""
+                    decision_text = {
+                        'STRONG_BUY': '🚀 적극매수',
+                        'BUY': '💚 매수',
+                        'HOLD': '🟡 보유',
+                        'SELL': '🔴 매도',
+                        'STRONG_SELL': '💥 적극매도'
+                    }.get(decision['decision'], decision['decision'])
+                    
+                    confidence_text = {
+                        'HIGH': '높음',
+                        'MEDIUM': '보통',
+                        'LOW': '낮음'
+                    }.get(decision['confidence'], decision['confidence'])
+                    
+                    report += f"""
 • 기술적 매매신호: {decision_text}
 • 신호 신뢰도: {confidence_text}
-• 판단 근거: {decision.get('reasoning', '분석 중')}"""
+• 판단 근거: {decision['reasoning']}"""
             
             # 4가지 폭락 대응 전략 상세 분석 (핵심 부분만)
             if four_strategy_result and position > 0:
@@ -740,7 +737,7 @@ class CrashAnalyzer:
 - 불확실성 하에서의 최적 의사결정 가이드라인
 
 ---
-Generated by 1Bo's Plan Enhanced Crash Analyzer v2.1.1
+Generated by 1Bo's Plan Enhanced Crash Analyzer v2.1
 분석 도구: 기술적 분석 + 포트폴리오 분석 + 위험도 평가 + 4가지 전략 분석 통합"""
             
             return report
@@ -790,7 +787,7 @@ Generated by 1Bo's Plan Enhanced Crash Analyzer v2.1.1
 객관적 분석과 실행 가능한 구체적 조언을 원합니다.
 
 ---
-Generated by 1Bo's Plan Crash Analyzer v2.1.1"""
+Generated by 1Bo's Plan Crash Analyzer v2.1"""
             
             return report
             
