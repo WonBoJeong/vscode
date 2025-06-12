@@ -5,7 +5,7 @@
 한국 주식 종목 관리 및 검색 기능
 
 Author: AI Assistant & User
-Version: 1.0.0
+Version: 1.0.1 - load_stock_list 메서드 추가
 """
 
 import pandas as pd
@@ -73,6 +73,18 @@ class KoreanStockManager:
         except Exception as e:
             self.logger.error(f"Failed to load Korean stocks: {e}")
             return False
+    
+    def load_stock_list(self):
+        """주식 리스트 반환 (main.py 호환성을 위한 메서드)"""
+        try:
+            if not self.stocks_data:
+                self.load_korean_stocks()
+            
+            return self.stocks_data.copy()
+            
+        except Exception as e:
+            self.logger.error(f"Failed to load stock list: {e}")
+            return {}
     
     def search_by_name(self, query, max_results=20):
         """회사명으로 검색"""

@@ -1,0 +1,59 @@
+[2025-06-12 09:49:39] INFO: Starting download for SOXL
+[2025-06-12 09:49:39] INFO: US stock: SOXL
+[2025-06-12 09:49:42] INFO: Download completed: SOXL_250612.csv (502 rows)
+[2025-06-12 14:03:25] INFO: Starting download for SOXL
+[2025-06-12 14:03:25] INFO: US stock: SOXL
+[2025-06-12 14:03:27] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 14:05:37] INFO: Data loaded: 005930_250610.csv (485 rows)
+[2025-06-12 14:33:42] INFO: Starting download for SOXL
+[2025-06-12 14:33:42] INFO: US stock: SOXL
+[2025-06-12 14:33:43] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 14:45:17] INFO: Starting download for SOXL
+[2025-06-12 14:45:17] INFO: US stock: SOXL
+[2025-06-12 14:45:18] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 14:53:16] INFO: Korean stock code formatted: 064350
+[2025-06-12 14:53:16] INFO: Starting download for 064350
+[2025-06-12 14:53:16] INFO: Korean stock: 현대로템 (064350)
+[2025-06-12 14:53:17] INFO: Download completed: 064350_250612.csv (2452 rows)
+[2025-06-12 15:10:14] INFO: Data loaded: SOXL_250612.csv (2515 rows)
+[2025-06-12 15:11:17] INFO: Starting download for SOXL
+[2025-06-12 15:11:17] INFO: US stock: SOXL
+[2025-06-12 15:11:18] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 15:45:13] INFO: Starting download for SOXL
+[2025-06-12 15:45:13] INFO: US stock: SOXL
+[2025-06-12 15:45:14] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 15:59:24] INFO: Data loaded: SOXL_250612.csv (2515 rows)
+[2025-06-12 15:59:26] INFO: Starting download for SOXL
+[2025-06-12 15:59:26] INFO: US stock: SOXL
+[2025-06-12 15:59:27] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 16:09:18] INFO: Data loaded: SOXL_250612.csv (2515 rows)
+[2025-06-12 16:09:20] INFO: Starting download for SOXL
+[2025-06-12 16:09:20] INFO: US stock: SOXL
+[2025-06-12 16:09:21] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 16:12:27] INFO: Starting download for SOXL
+[2025-06-12 16:12:27] INFO: US stock: SOXL
+[2025-06-12 16:12:28] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 16:18:58] INFO: Starting download for SOXL
+[2025-06-12 16:18:58] INFO: US stock: SOXL
+[2025-06-12 16:18:59] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 16:48:34] INFO: Starting download for SOXL
+[2025-06-12 16:48:34] INFO: US stock: SOXL
+[2025-06-12 16:48:35] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 16:59:57] INFO: Starting download for SOXL
+[2025-06-12 16:59:57] INFO: US stock: SOXL
+[2025-06-12 16:59:58] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 18:02:04] INFO: Starting download for SOXL
+[2025-06-12 18:02:04] INFO: US stock: SOXL
+[2025-06-12 18:02:05] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 18:08:31] INFO: Starting download for SOXL
+[2025-06-12 18:08:31] INFO: US stock: SOXL
+[2025-06-12 18:08:32] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 19:08:39] INFO: Starting download for SOXL
+[2025-06-12 19:08:39] INFO: US stock: SOXL
+[2025-06-12 19:08:40] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 19:15:44] INFO: Starting download for SOXL
+[2025-06-12 19:15:44] INFO: US stock: SOXL
+[2025-06-12 19:15:45] INFO: Download completed: SOXL_250612.csv (2515 rows)
+[2025-06-12 20:04:21] INFO: Starting download for SOXL
+[2025-06-12 20:04:21] INFO: US stock: SOXL
+[2025-06-12 20:04:22] INFO: Download completed: SOXL_250612.csv (2515 rows)

@@ -1,0 +1,39 @@
+[2025-06-12 10:09:32] INFO: Analysis completed for SOXL
+[2025-06-12 12:09:38] INFO: Analysis completed for SOXL
+[2025-06-12 13:06:44] INFO: Analysis completed for SOXL
+[2025-06-12 13:06:47] INFO: Analysis completed for SOXL
+[2025-06-12 13:06:51] INFO: Analysis completed for SOXL
+[2025-06-12 13:06:52] INFO: Analysis completed for SOXL
+[2025-06-12 14:53:34] INFO: Analysis completed for 064350
+[2025-06-12 15:00:30] INFO: Analysis completed for 064350
+[2025-06-12 15:04:57] INFO: Analysis completed for 064350
+[2025-06-12 15:05:16] INFO: Analysis completed for 064350
+[2025-06-12 16:48:35] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 16:48:35] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 16:59:59] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 16:59:59] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 18:02:05] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 18:02:05] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 18:02:11] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 18:02:11] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 18:08:33] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 18:08:33] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 18:08:38] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 18:08:38] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 18:08:54] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 18:08:54] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 19:08:40] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 19:08:40] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 19:08:50] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 19:08:50] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 19:10:36] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 19:10:36] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 19:15:45] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 19:15:45] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 19:15:51] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 19:15:51] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 19:16:23] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 19:16:23] INFO: Enhanced analysis completed for SOXL
+[2025-06-12 20:04:23] INFO: SP500 data updated successfully
+[2025-06-12 20:04:23] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 20:05:21] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp

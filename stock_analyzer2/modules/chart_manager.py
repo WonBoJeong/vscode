@@ -204,15 +204,15 @@ class ChartManager:
             self.logger.error(f"Moving averages plotting failed: {e}")
     
     def plot_entry_line(self, entry_price):
-        """진입가 라인 그리기"""
+        """평단가 라인 그리기"""
         try:
             if entry_price and entry_price > 0:
                 colors = CHART_CONFIG['colors']
-                # 한국/미국 구분해서 라벨 표시
+                # 한국/미국 구분해서 라벨 표시 - "Mean" 용어 사용
                 if self.is_korean_stock:
-                    label_text = f'Entry: ₩{entry_price:,.0f}'
+                    label_text = f'Mean: ₩{entry_price:,.0f}'
                 else:
-                    label_text = f'Entry: ${entry_price:.2f}'
+                    label_text = f'Mean: ${entry_price:.2f}'
                 
                 self.axes.axhline(y=entry_price, color=colors['entry_line'], 
                                  linestyle='--', linewidth=2, alpha=0.8, 
@@ -470,49 +470,44 @@ class ChartControlPanel:
         self.create_controls()
     
     def create_controls(self):
-        """컨트롤 생성"""
+        """컨트롤 생성 - 한 줄로 배치"""
         try:
-            # 컨트롤을 2행으로 배치
-            control_row1 = tk.Frame(self.parent)
-            control_row1.pack(fill=tk.X, pady=(0, 5))
-            
-            control_row2 = tk.Frame(self.parent)
-            control_row2.pack(fill=tk.X)
+            # 모든 컨트롤을 한 줄로 배치
+            control_row = tk.Frame(self.parent)
+            control_row.pack(fill=tk.X, pady=(0, 5))
             
             # 기간 선택
-            tk.Label(control_row1, text="기간:", font=('Segoe UI', 11)).pack(side=tk.LEFT)
-            period_combo = ttk.Combobox(control_row1, textvariable=self.period_var, 
+            tk.Label(control_row, text="기간:", font=('Segoe UI', 11)).pack(side=tk.LEFT)
+            period_combo = ttk.Combobox(control_row, textvariable=self.period_var, 
                                        values=["30일", "90일", "1년", "3년", "10년"], 
                                        state="readonly", width=8)
-            period_combo.pack(side=tk.LEFT, padx=(5, 20))
+            period_combo.pack(side=tk.LEFT, padx=(5, 15))
             period_combo.bind('<<ComboboxSelected>>', self.on_period_changed)
             
-            # 이동평균선 선택
-            tk.Label(control_row1, text="이동평균:", font=('Segoe UI', 11)).pack(side=tk.LEFT)
+            # 차트 액션 버튼들 (저장 버튼 제거)
+            ttk.Button(control_row, text="🔄 새로고침", 
+                      command=self.refresh_chart).pack(side=tk.LEFT, padx=(0, 5))
+            ttk.Button(control_row, text="ℹ️ 정보", 
+                      command=self.show_chart_info).pack(side=tk.LEFT, padx=(0, 15))
             
-            ma5_check = ttk.Checkbutton(control_row1, text="MA5", variable=self.ma5_var,
+            # 이동평균선 선택
+            tk.Label(control_row, text="이동평균:", font=('Segoe UI', 11)).pack(side=tk.LEFT)
+            
+            ma5_check = ttk.Checkbutton(control_row, text="MA5", variable=self.ma5_var,
                                        command=self.on_ma_changed)
             ma5_check.pack(side=tk.LEFT, padx=5)
             
-            ma20_check = ttk.Checkbutton(control_row1, text="MA20", variable=self.ma20_var,
+            ma20_check = ttk.Checkbutton(control_row, text="MA20", variable=self.ma20_var,
                                         command=self.on_ma_changed)
             ma20_check.pack(side=tk.LEFT, padx=5)
             
-            ma60_check = ttk.Checkbutton(control_row1, text="MA60", variable=self.ma60_var,
+            ma60_check = ttk.Checkbutton(control_row, text="MA60", variable=self.ma60_var,
                                         command=self.on_ma_changed)
             ma60_check.pack(side=tk.LEFT, padx=5)
             
-            ma200_check = ttk.Checkbutton(control_row1, text="MA200", variable=self.ma200_var,
+            ma200_check = ttk.Checkbutton(control_row, text="MA200", variable=self.ma200_var,
                                          command=self.on_ma_changed)
             ma200_check.pack(side=tk.LEFT, padx=5)
-            
-            # 차트 액션 버튼들
-            ttk.Button(control_row2, text="🔄 차트 새로고침", 
-                      command=self.refresh_chart).pack(side=tk.LEFT, padx=(0, 10))
-            ttk.Button(control_row2, text="💾 차트 저장", 
-                      command=self.save_chart).pack(side=tk.LEFT, padx=(0, 10))
-            ttk.Button(control_row2, text="ℹ️ 차트 정보", 
-                      command=self.show_chart_info).pack(side=tk.LEFT, padx=(0, 10))
             
         except Exception as e:
             self.logger.error(f"Control creation failed: {e}")
@@ -575,12 +570,12 @@ class ChartControlPanel:
                 current_price = f"₩{info['price_range']['current']:,.0f}"
                 max_price = f"₩{info['price_range']['max']:,.0f}"
                 min_price = f"₩{info['price_range']['min']:,.0f}"
-                entry_text = f"• 진입가: ₩{info['entry_price']:,.0f}" if info['entry_price'] else ""
+                entry_text = f"• 평단가: ₩{info['entry_price']:,.0f}" if info['entry_price'] else ""
             else:
                 current_price = f"${info['price_range']['current']:.2f}"
                 max_price = f"${info['price_range']['max']:.2f}"
                 min_price = f"${info['price_range']['min']:.2f}"
-                entry_text = f"• 진입가: ${info['entry_price']:.2f}" if info['entry_price'] else ""
+                entry_text = f"• 평단가: ${info['entry_price']:.2f}" if info['entry_price'] else ""
             
             info_text = f"""📊 차트 정보
 

@@ -2,30 +2,15 @@
 # -*- coding: utf-8 -*-
 """
 1Bo's Plan - Modules Package
-모듈 패키지 초기화
+모듈 패키지 초기화 (순환 import 방지)
 
 Author: AI Assistant & User
-Version: 1.0.0
+Version: 1.0.1 - 순환 import 수정
 """
 
-from .utils import Logger, ErrorHandler
-from .data_manager import DataManager
-from .korean_stock_manager import KoreanStockManager
-from .chart_manager import ChartManager
-from .analysis_engine import AnalysisEngine
-from .investment_calculator import InvestmentCalculator
-from .crash_analyzer import CrashAnalyzer
-
-__all__ = [
-    'Logger',
-    'ErrorHandler', 
-    'DataManager',
-    'KoreanStockManager',
-    'ChartManager',
-    'AnalysisEngine',
-    'InvestmentCalculator',
-    'CrashAnalyzer'
-]
-
-__version__ = "1.0.0"
+# 순환 import 방지를 위해 기본적인 정보만 포함
+__version__ = "1.0.1"
 __author__ = "AI Assistant & User"
+
+# 모듈들은 직접 import하지 않고 필요할 때 개별적으로 import
+# from .utils import Logger, ErrorHandler  # 이런 식으로 하면 순환 import 발생

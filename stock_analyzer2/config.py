@@ -5,7 +5,7 @@
 주식 분석 프로그램 설정 파일
 
 Author: AI Assistant & User
-Version: 1.0.0
+Version: 2.0.0 - 10년 다운로드 지원
 """
 
 import os
@@ -13,8 +13,8 @@ from pathlib import Path
 
 # 애플리케이션 정보
 APP_NAME = "1Bo's Plan"
-APP_VERSION = "1.0.0"
-APP_DESCRIPTION = "Advanced Stock Analysis Tool with Modular Architecture"
+APP_VERSION = "2.0.0"
+APP_DESCRIPTION = "Advanced Stock Analysis Tool with Smart Data Management"
 
 # 파일 경로 설정
 BASE_DIR = Path(__file__).parent
@@ -41,7 +41,7 @@ UI_CONFIG = {
     'font_size_info': 12,
 }
 
-# 차트 설정
+# 🔥 차트 설정 - ma120 색상 추가
 CHART_CONFIG = {
     'default_period': '90일',
     'figure_size': (14, 8),
@@ -51,6 +51,7 @@ CHART_CONFIG = {
         'ma5': 'red',
         'ma20': 'orange', 
         'ma60': 'green',
+        'ma120': 'cyan',        # 🔥 추가된 부분!
         'ma200': 'purple',
         'entry_line': 'red',
         'grid': 'gray'
@@ -59,9 +60,9 @@ CHART_CONFIG = {
     'enable_unicode_minus': False
 }
 
-# 인기 종목 및 내 종목
-POPULAR_STOCKS = ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "NFLX", "IONQ"]
-MY_STOCKS = ["VOO", "VTV", "PLTR", "TQQQ", "TNA", "SOXL", "SCHD", "JEPI", "JEPQ", "TSLL"]
+# 인기 종목 및 내 종목 (각각 8개씩)
+POPULAR_STOCKS = ["AAPL", "TSLA", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "NFLX"]
+MY_STOCKS = ["VOO", "VTV", "PLTR", "TQQQ", "TNA", "SOXL", "SCHD", "JEPI"]
 
 # 레버리지 ETF 목록
 LEVERAGE_ETFS = ['SOXL', 'TQQQ', 'UPRO', 'TMF', 'SPXL', 'TECL', 'FNGU', 'WEBL', 'TSLL', 'TNA']
@@ -88,13 +89,16 @@ RISK_CONFIG = {
     'leverage_risk_multiplier': 1.3
 }
 
-# 데이터 설정
+# 데이터 설정 (v2.0.0 - 10년 다운로드 지원)
 DATA_CONFIG = {
-    'download_period': '2y',  # Yahoo Finance 기본 기간
+    'download_period': '10y',  # 기본 10년치 다운로드
+    'initial_download_period': '10y',  # 첫 다운로드시 기간
+    'update_mode': 'incremental',  # 증분 업데이트 모드
     'file_name_format': '{symbol}_{date}.csv',
     'date_format': '%y%m%d',
     'korean_stock_file': 'krx_stock_list.csv',
     'max_file_age_days': 30,  # 오래된 파일 정리 기준
+    'update_threshold_days': 1,  # 1일 이상 오래된 데이터면 업데이트
 }
 
 # 로깅 설정
