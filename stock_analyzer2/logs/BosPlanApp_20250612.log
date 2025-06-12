@@ -60,3 +60,7 @@
 [2025-06-12 20:04:09] INFO: Budget updated for US stock: SOXL
 [2025-06-12 20:04:09] INFO: Stock selected: SOXL
 [2025-06-12 20:04:23] ERROR: Technical info panel update failed: 'signal'
+[2025-06-12 20:22:30] INFO: 1Bo's Plan v2.0.0 started successfully
+[2025-06-12 20:22:54] INFO: Budget updated for US stock: SOXL
+[2025-06-12 20:22:54] INFO: Stock selected: SOXL
+[2025-06-12 20:22:57] ERROR: Technical info panel update failed: 'signal'

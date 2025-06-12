@@ -37,3 +37,5 @@
 [2025-06-12 20:04:23] INFO: SP500 data updated successfully
 [2025-06-12 20:04:23] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
 [2025-06-12 20:05:21] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
+[2025-06-12 20:22:57] INFO: SP500 data updated successfully
+[2025-06-12 20:22:57] ERROR: SP500 comparison failed: Invalid comparison between dtype=datetime64[ns] and Timestamp
