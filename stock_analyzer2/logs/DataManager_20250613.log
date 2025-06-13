@@ -1,0 +1,37 @@
+[2025-06-13 12:28:39] INFO: Data loaded: 005930_250612.csv (2452 rows)
+[2025-06-13 12:29:44] INFO: Starting download for SOXL
+[2025-06-13 12:29:44] INFO: US stock: SOXL
+[2025-06-13 12:29:47] INFO: Download completed: SOXL_250613.csv (2515 rows)
+[2025-06-13 12:52:17] INFO: Starting download for PLTR
+[2025-06-13 12:52:17] INFO: US stock: PLTR
+[2025-06-13 12:52:18] INFO: Download completed: PLTR_250613.csv (1181 rows)
+[2025-06-13 13:03:29] INFO: Starting download for SOXL
+[2025-06-13 13:03:29] INFO: US stock: SOXL
+[2025-06-13 13:03:30] INFO: Download completed: SOXL_250613.csv (2515 rows)
+[2025-06-13 13:17:13] INFO: Starting download for SOXL
+[2025-06-13 13:17:13] INFO: US stock: SOXL
+[2025-06-13 13:17:14] INFO: Download completed: SOXL_250613.csv (2515 rows)
+[2025-06-13 13:24:31] INFO: Starting download for SOXL
+[2025-06-13 13:24:31] INFO: US stock: SOXL
+[2025-06-13 13:24:32] INFO: Download completed: SOXL_250613.csv (2515 rows)
+[2025-06-13 13:48:28] INFO: Starting download for SOXL
+[2025-06-13 13:48:28] INFO: US stock: SOXL
+[2025-06-13 13:48:29] INFO: Download completed: SOXL_250613.csv (2515 rows)
+[2025-06-13 13:52:40] INFO: Starting download for SOXL
+[2025-06-13 13:52:40] INFO: US stock: SOXL
+[2025-06-13 13:52:41] INFO: Download completed: SOXL_250613.csv (2515 rows)
+[2025-06-13 13:59:58] INFO: Starting download for SOXL
+[2025-06-13 13:59:58] INFO: US stock: SOXL
+[2025-06-13 13:59:59] INFO: Download completed: SOXL_250613.csv (2515 rows)
+[2025-06-13 14:01:21] INFO: Starting download for TNA
+[2025-06-13 14:01:21] INFO: US stock: TNA
+[2025-06-13 14:01:22] INFO: Download completed: TNA_250613.csv (2515 rows)
+[2025-06-13 14:04:05] INFO: Starting download for TNA
+[2025-06-13 14:04:05] INFO: US stock: TNA
+[2025-06-13 14:04:06] INFO: Download completed: TNA_250613.csv (2515 rows)
+[2025-06-13 14:05:07] INFO: Starting download for TNA
+[2025-06-13 14:05:07] INFO: US stock: TNA
+[2025-06-13 14:05:08] INFO: Download completed: TNA_250613.csv (2515 rows)
+[2025-06-13 14:10:41] INFO: Starting download for TNA
+[2025-06-13 14:10:41] INFO: US stock: TNA
+[2025-06-13 14:10:42] INFO: Download completed: TNA_250613.csv (2515 rows)

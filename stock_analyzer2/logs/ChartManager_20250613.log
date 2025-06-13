@@ -1,0 +1,48 @@
+[2025-06-13 12:08:12] INFO: Chart setup completed
+[2025-06-13 12:21:58] ERROR: Chart setup failed: 'ChartManager' object has no attribute 'parent_widget'
+[2025-06-13 12:24:35] ERROR: Chart setup failed: 'ChartManager' object has no attribute '_on_mouse_move'
+[2025-06-13 12:25:57] INFO: Chart setup completed successfully
+[2025-06-13 12:27:50] INFO: Chart setup completed successfully
+[2025-06-13 12:28:24] INFO: Chart setup completed successfully
+[2025-06-13 12:28:39] INFO: Chart updated for 005930 (Korean: True)
+[2025-06-13 12:28:43] INFO: Chart updated for 005930 (Korean: True)
+[2025-06-13 12:29:48] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 12:29:53] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 12:30:14] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 12:39:11] INFO: Chart setup completed successfully
+[2025-06-13 12:41:34] INFO: Chart setup completed successfully
+[2025-06-13 12:50:42] INFO: Chart setup completed successfully
+[2025-06-13 12:51:55] INFO: Chart setup completed successfully
+[2025-06-13 12:52:18] INFO: Chart updated for PLTR (Korean: False)
+[2025-06-13 12:52:27] INFO: Chart period set to: 10년
+[2025-06-13 12:52:27] INFO: Chart updated for PLTR (Korean: False)
+[2025-06-13 12:52:36] INFO: Chart period set to: 3년
+[2025-06-13 12:52:36] INFO: Chart updated for PLTR (Korean: False)
+[2025-06-13 12:52:41] INFO: Chart period set to: 1년
+[2025-06-13 12:52:41] INFO: Chart updated for PLTR (Korean: False)
+[2025-06-13 12:52:56] INFO: Chart updated for PLTR (Korean: False)
+[2025-06-13 13:03:19] INFO: Chart setup completed successfully
+[2025-06-13 13:03:30] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 13:03:40] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 13:16:09] INFO: Chart setup completed successfully
+[2025-06-13 13:16:58] INFO: Chart setup completed successfully
+[2025-06-13 13:17:15] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 13:24:25] INFO: Chart setup completed successfully
+[2025-06-13 13:24:32] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 13:47:49] INFO: Chart setup completed successfully
+[2025-06-13 13:48:29] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 13:52:31] INFO: Chart setup completed successfully
+[2025-06-13 13:52:42] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 13:52:52] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 13:59:50] INFO: Chart setup completed successfully
+[2025-06-13 13:59:59] INFO: Chart updated for SOXL (Korean: False)
+[2025-06-13 14:01:14] INFO: Chart setup completed successfully
+[2025-06-13 14:01:22] INFO: Chart updated for TNA (Korean: False)
+[2025-06-13 14:01:27] INFO: Chart updated for TNA (Korean: False)
+[2025-06-13 14:04:00] INFO: Chart setup completed successfully
+[2025-06-13 14:04:07] INFO: Chart updated for TNA (Korean: False)
+[2025-06-13 14:05:01] INFO: Chart setup completed successfully
+[2025-06-13 14:05:08] INFO: Chart updated for TNA (Korean: False)
+[2025-06-13 14:10:16] INFO: Chart updated for TNA (Korean: False)
+[2025-06-13 14:10:42] INFO: Chart updated for TNA (Korean: False)
+[2025-06-13 14:10:54] INFO: Chart updated for TNA (Korean: False)

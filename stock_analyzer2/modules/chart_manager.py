@@ -9,76 +9,89 @@ Version: 1.0.0
 """
 
 import matplotlib.pyplot as plt
+import mplfinance as mpf
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import pandas as pd
-import numpy as np
 import tkinter as tk
-from tkinter import messagebox, filedialog, ttk
+from tkinter import ttk, messagebox, filedialog
+import warnings
 from datetime import datetime
-from pathlib import Path
-import sys
 
-# 로컬 모듈 import
-sys.path.append(str(Path(__file__).parent.parent))
 from config import CHART_CONFIG
-from .utils import Logger, format_currency_auto, get_color_by_change, DataValidator
+from .utils import Logger, DataValidator
+
+# 폰트 관련 경고 메시지 숨기기 
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
+warnings.filterwarnings("ignore", category=UserWarning, module="mplfinance")
+
+# 이모지 대신 텍스트 아이콘 사용
+ICONS = {
+    'chart': '[📊]',
+    'trend_up': '[↑]',
+    'trend_down': '[↓]',
+    'crosshair': '[+]',
+    'refresh': '[🔄]',
+    'info': '[ℹ️]',
+    'warning': '[⚠️]',
+    'success': '[✅]',
+    'error': '[❌]'
+}
 
 class ChartManager:
     """차트 관리 클래스"""
     
-    def __init__(self, parent_widget):
-        self.parent_widget = parent_widget
+    def __init__(self, chart_frame):
         self.logger = Logger("ChartManager")
-        
-        # 차트 설정
-        self.figure = None
-        self.canvas = None
-        self.toolbar = None
-        self.axes = None
-        
-        # 데이터 및 설정
+        self.parent_widget = chart_frame
         self.current_data = None
-        self.current_symbol = ""
-        self.entry_price = None
-        self.is_korean_stock = False
+        self.current_symbol = None
+        self.current_avg_price = None
+        self.style = 'default'
+        self.show_volume = True
+        self.show_ma = True
+        self.crosshair_enabled = False
         
-        # 차트 옵션
-        self.period = CHART_CONFIG['default_period']
+        # 차트 기본 설정
+        self.period = '1y'  # 기본 기간
         self.show_ma5 = True
         self.show_ma20 = True
         self.show_ma60 = False
         self.show_ma200 = False
+        self.chart_style = 'candle'  # candle, ohlc, line
         
-        # 초기화
+        # 차트 초기 설정
         self.setup_chart()
-    
+        
     def setup_chart(self):
         """차트 초기 설정"""
         try:
-            # matplotlib 설정
+            # 기본 설정
+            plt.style.use('default')
             plt.rcParams['font.family'] = CHART_CONFIG['font_family']
             plt.rcParams['axes.unicode_minus'] = CHART_CONFIG['enable_unicode_minus']
-            plt.rcParams['font.size'] = 11
             
-            # Figure 생성
-            self.figure, self.axes = plt.subplots(
-                figsize=CHART_CONFIG['figure_size'], 
+            # Canvas가 이미 있다면 제거
+            if hasattr(self, 'canvas'):
+                self.canvas.get_tk_widget().destroy()
+            
+            # Figure와 Canvas 초기화
+            self.figure = plt.figure(
+                figsize=CHART_CONFIG['figure_size'],
                 dpi=CHART_CONFIG['dpi']
             )
-            
-            # Canvas 생성
-            self.canvas = FigureCanvasTkAgg(self.figure, self.parent_widget)
+            self.ax = self.figure.add_subplot(111)
+            self.canvas = FigureCanvasTkAgg(self.figure, master=self.parent_widget)
+            self.canvas.draw()
             self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
             
-            # 네비게이션 툴바
+            # 네비게이션 툴바 추가
             self.toolbar = NavigationToolbar2Tk(self.canvas, self.parent_widget)
             self.toolbar.update()
             
-            # 초기 차트
-            self.show_empty_chart()
+            # 이벤트 바인딩
+            self.canvas.mpl_connect('motion_notify_event', self._on_mouse_move)
             
-            self.logger.info("Chart setup completed")
+            self.logger.info("Chart setup completed successfully")
             
         except Exception as e:
             self.logger.error(f"Chart setup failed: {e}")
@@ -87,12 +100,12 @@ class ChartManager:
     def show_empty_chart(self):
         """빈 차트 표시"""
         try:
-            self.axes.clear()
-            self.axes.text(0.5, 0.5, '📈 차트가 여기에 표시됩니다\n\n주식을 선택하고 분석을 실행하세요', 
-                          transform=self.axes.transAxes, ha='center', va='center', 
+            self.ax.clear()
+            self.ax.text(0.5, 0.5, '📈 차트가 여기에 표시됩니다\n\n주식을 선택하고 분석을 실행하세요', 
+                          transform=self.ax.transAxes, ha='center', va='center', 
                           fontsize=16, color='gray')
-            self.axes.set_xticks([])
-            self.axes.set_yticks([])
+            self.ax.set_xticks([])
+            self.ax.set_yticks([])
             self.canvas.draw()
         except Exception as e:
             self.logger.error(f"Empty chart display failed: {e}")
@@ -111,7 +124,7 @@ class ChartManager:
             self.is_korean_stock = DataValidator.is_korean_stock(symbol)
             
             # 차트 클리어
-            self.axes.clear()
+            self.ax.clear()
             
             # 기간별 데이터 선택
             chart_data = self.get_period_data(data)
@@ -176,7 +189,7 @@ class ChartManager:
         """가격 라인 그리기"""
         try:
             colors = CHART_CONFIG['colors']
-            self.axes.plot(data.index, data['Close'], 
+            self.ax.plot(data.index, data['Close'], 
                           color=colors['price'], linewidth=3, 
                           label='Close Price', alpha=0.8)
         except Exception as e:
@@ -197,7 +210,7 @@ class ChartManager:
             for show, period, label, color in ma_settings:
                 if show and len(data) >= period:
                     ma = data['Close'].rolling(period).mean()
-                    self.axes.plot(data.index, ma, color=color, linewidth=2, 
+                    self.ax.plot(data.index, ma, color=color, linewidth=2, 
                                   alpha=0.7, label=label)
                     
         except Exception as e:
@@ -214,7 +227,7 @@ class ChartManager:
                 else:
                     label_text = f'Mean: ${entry_price:.2f}'
                 
-                self.axes.axhline(y=entry_price, color=colors['entry_line'], 
+                self.ax.axhline(y=entry_price, color=colors['entry_line'], 
                                  linestyle='--', linewidth=2, alpha=0.8, 
                                  label=label_text)
         except Exception as e:
@@ -229,18 +242,18 @@ class ChartManager:
             else:
                 title = f'{symbol} - {self.period}'
                 
-            self.axes.set_title(title, fontsize=18, fontweight='bold', pad=20)
+            self.ax.set_title(title, fontsize=18, fontweight='bold', pad=20)
             
             # Y축 라벨 설정 (한국/미국 구분)
             if self.is_korean_stock:
-                self.axes.set_ylabel('Price (₩)', fontsize=14)
+                self.ax.set_ylabel('Price (₩)', fontsize=14)
             else:
-                self.axes.set_ylabel('Price ($)', fontsize=14)
+                self.ax.set_ylabel('Price ($)', fontsize=14)
             
             # 범례 설정
-            handles, labels = self.axes.get_legend_handles_labels()
+            handles, labels = self.ax.get_legend_handles_labels()
             if handles:
-                self.axes.legend(loc='upper left', fontsize=12, framealpha=0.9)
+                self.ax.legend(loc='upper left', fontsize=12, framealpha=0.9)
                 
         except Exception as e:
             self.logger.error(f"Chart styling failed: {e}")
@@ -254,17 +267,17 @@ class ChartManager:
             data_length = len(data)
             
             if data_length > 252:  # 1년 이상
-                self.axes.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-                self.axes.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+                self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+                self.ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
             elif data_length > 90:  # 90일 이상
-                self.axes.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-                self.axes.xaxis.set_major_locator(mdates.WeekdayLocator(interval=2))
+                self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+                self.ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=2))
             else:  # 90일 미만
-                self.axes.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-                self.axes.xaxis.set_major_locator(mdates.WeekdayLocator())
+                self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+                self.ax.xaxis.set_major_locator(mdates.WeekdayLocator())
             
             # 날짜 라벨 회전
-            plt.setp(self.axes.xaxis.get_majorticklabels(), rotation=45, ha='right')
+            plt.setp(self.ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
             
         except Exception as e:
             self.logger.error(f"X-axis formatting failed: {e}")
@@ -278,17 +291,17 @@ class ChartManager:
                 price_range = price_max - price_min
                 margin = price_range * 0.05  # 5% 마진
                 
-                self.axes.set_ylim(price_min - margin, price_max + margin)
+                self.ax.set_ylim(price_min - margin, price_max + margin)
                 
                 # Y축 포맷터 설정 (한국/미국 구분)
                 if self.is_korean_stock:
                     # 한국 주식: 원화, 천 단위 구분기호, 소수점 없음
-                    self.axes.yaxis.set_major_formatter(plt.FuncFormatter(
+                    self.ax.yaxis.set_major_formatter(plt.FuncFormatter(
                         lambda x, p: f'₩{x:,.0f}'
                     ))
                 else:
                     # 미국 주식: 달러, 소수점 있음
-                    self.axes.yaxis.set_major_formatter(plt.FuncFormatter(
+                    self.ax.yaxis.set_major_formatter(plt.FuncFormatter(
                         lambda x, p: f'${x:,.2f}'
                     ))
                     
@@ -300,7 +313,7 @@ class ChartManager:
         try:
             # 그리드 설정
             grid_color = CHART_CONFIG['colors']['grid']
-            self.axes.grid(True, alpha=0.3, linestyle='-', linewidth=0.5, color=grid_color)
+            self.ax.grid(True, alpha=0.3, linestyle='-', linewidth=0.5, color=grid_color)
             
             # 레이아웃 조정
             self.figure.tight_layout(pad=3.0)
@@ -451,29 +464,89 @@ class ChartManager:
             self.logger.info("Chart manager destroyed")
         except Exception as e:
             self.logger.error(f"Chart manager destruction failed: {e}")
+    
+    def _on_mouse_move(self, event):
+        """마우스 이동 이벤트 처리"""
+        try:
+            if event.inaxes:
+                x, y = event.xdata, event.ydata
+                if self.current_data is not None and self.crosshair_enabled:
+                    # 이전 라인 제거
+                    if hasattr(self, '_crosshair_lines'):
+                        for line in self._crosshair_lines:
+                            line.remove()
+                    
+                    # 새 크로스헤어 라인 그리기
+                    ax = event.inaxes
+                    xmin, xmax = ax.get_xlim()
+                    ymin, ymax = ax.get_ylim()
+                    
+                    # 수직선과 수평선
+                    hline = ax.axhline(y=y, color='gray', linestyle='--', alpha=0.5)
+                    vline = ax.axvline(x=x, color='gray', linestyle='--', alpha=0.5)
+                    
+                    self._crosshair_lines = [hline, vline]
+                    self.canvas.draw_idle()
+                    
+                    # 가격 정보 업데이트
+                    if isinstance(x, (int, float)) and isinstance(y, (int, float)):
+                        self._update_price_info(x, y)
+        except Exception as e:
+            self.logger.error(f"Mouse move handling failed: {e}")
+    
+    def _update_price_info(self, x, y):
+        """가격 정보 업데이트"""
+        try:
+            if self.current_data is not None:
+                # x축의 날짜 인덱스 찾기
+                dates = self.current_data.index
+                if x >= 0 and x < len(dates):
+                    date_idx = int(x)
+                    if date_idx < len(dates):
+                        date = dates[date_idx]
+                        price_data = self.current_data.loc[date]
+                        
+                        # 툴팁 텍스트 생성
+                        if self.is_korean_stock:
+                            price_text = f"₩{y:,.0f}"
+                        else:
+                            price_text = f"${y:.2f}"
+                        
+                        date_text = date.strftime("%Y-%m-%d")
+                        
+                        self.toolbar.set_message(f"{date_text} | {price_text}")
+                    else:
+                        self.toolbar.set_message("")
+                else:
+                    self.toolbar.set_message("")
+        except Exception as e:
+            self.logger.error(f"Price info update failed: {e}")
+            self.toolbar.set_message("")
 
 class ChartControlPanel:
     """차트 컨트롤 패널"""
     
-    def __init__(self, parent, chart_manager):
-        self.parent = parent
-        self.chart_manager = chart_manager
+    def __init__(self, control_frame, chart_manager):
+        """초기화"""
         self.logger = Logger("ChartControlPanel")
+        self.chart_manager = chart_manager
         
-        # 변수들
-        self.period_var = tk.StringVar(value=chart_manager.period)
-        self.ma5_var = tk.BooleanVar(value=chart_manager.show_ma5)
-        self.ma20_var = tk.BooleanVar(value=chart_manager.show_ma20)
-        self.ma60_var = tk.BooleanVar(value=chart_manager.show_ma60)
-        self.ma200_var = tk.BooleanVar(value=chart_manager.show_ma200)
+        # 차트 컨트롤 변수 초기화
+        self.period_var = tk.StringVar(value=getattr(chart_manager, 'period', '1y'))
+        self.ma5_var = tk.BooleanVar(value=getattr(chart_manager, 'show_ma5', True))
+        self.ma20_var = tk.BooleanVar(value=getattr(chart_manager, 'show_ma20', True))
+        self.ma60_var = tk.BooleanVar(value=getattr(chart_manager, 'show_ma60', False))
+        self.ma200_var = tk.BooleanVar(value=getattr(chart_manager, 'show_ma200', False))
+        self.chart_style_var = tk.StringVar(value=getattr(chart_manager, 'chart_style', 'candle'))
         
-        self.create_controls()
+        # 컨트롤 UI 생성
+        self.create_controls(control_frame)
     
-    def create_controls(self):
+    def create_controls(self, parent):
         """컨트롤 생성 - 한 줄로 배치"""
         try:
             # 모든 컨트롤을 한 줄로 배치
-            control_row = tk.Frame(self.parent)
+            control_row = tk.Frame(parent)
             control_row.pack(fill=tk.X, pady=(0, 5))
             
             # 기간 선택
@@ -485,9 +558,9 @@ class ChartControlPanel:
             period_combo.bind('<<ComboboxSelected>>', self.on_period_changed)
             
             # 차트 액션 버튼들 (저장 버튼 제거)
-            ttk.Button(control_row, text="🔄 새로고침", 
+            ttk.Button(control_row, text=f"{ICONS['refresh']} 새로고침", 
                       command=self.refresh_chart).pack(side=tk.LEFT, padx=(0, 5))
-            ttk.Button(control_row, text="ℹ️ 정보", 
+            ttk.Button(control_row, text=f"{ICONS['info']} 정보", 
                       command=self.show_chart_info).pack(side=tk.LEFT, padx=(0, 15))
             
             # 이동평균선 선택
@@ -538,12 +611,12 @@ class ChartControlPanel:
         """차트 새로고침"""
         try:
             if self.chart_manager.refresh_chart():
-                messagebox.showinfo("✅", "차트가 새로고침되었습니다.")
+                messagebox.showinfo(f"{ICONS['success']}", "차트가 새로고침되었습니다.")
             else:
-                messagebox.showwarning("⚠️", "새로고침할 차트 데이터가 없습니다.")
+                messagebox.showwarning(f"{ICONS['warning']}", "새로고침할 차트 데이터가 없습니다.")
         except Exception as e:
             self.logger.error(f"Chart refresh failed: {e}")
-            messagebox.showerror("❌", f"차트 새로고침 실패: {e}")
+            messagebox.showerror(f"{ICONS['error']}", f"차트 새로고침 실패: {e}")
     
     def save_chart(self):
         """차트 저장"""

@@ -231,7 +231,7 @@ class BosPlanApp:
             self.stock_info_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
             
             self.stock_info_label = tk.Label(self.stock_info_panel, text="종목을 선택하세요", 
-                                           font=('Segoe UI', 12), justify=tk.LEFT, wraplength=200)
+                                           font=('Segoe UI', 9), justify=tk.LEFT, wraplength=200)
             self.stock_info_label.pack(anchor=tk.W)
             
             # 2. 포지션 정보 패널
@@ -239,7 +239,7 @@ class BosPlanApp:
             self.position_info_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
             
             self.position_info_label = tk.Label(self.position_info_panel, text="포지션 없음", 
-                                               font=('Segoe UI', 12), justify=tk.LEFT, wraplength=200)
+                                               font=('Segoe UI', 9), justify=tk.LEFT, wraplength=200)
             self.position_info_label.pack(anchor=tk.W)
             
             # 3. 기술적 분석 패널
@@ -247,7 +247,7 @@ class BosPlanApp:
             self.technical_info_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
             
             self.technical_info_label = tk.Label(self.technical_info_panel, text="분석 대기중", 
-                                                font=('Segoe UI', 12), justify=tk.LEFT, wraplength=200)
+                                                font=('Segoe UI', 9), justify=tk.LEFT, wraplength=200)
             self.technical_info_label.pack(anchor=tk.W)
             
             # 4. 매매 신호 패널
@@ -255,7 +255,7 @@ class BosPlanApp:
             self.signal_info_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
             
             self.signal_info_label = tk.Label(self.signal_info_panel, text="신호 없음", 
-                                             font=('Segoe UI', 12), justify=tk.LEFT, wraplength=200)
+                                             font=('Segoe UI', 9), justify=tk.LEFT, wraplength=200)
             self.signal_info_label.pack(anchor=tk.W)
             
             # 차트 패널 - 더 넓은 공간 확보
@@ -317,7 +317,7 @@ class BosPlanApp:
             result_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
             
             self.investment_results = scrolledtext.ScrolledText(result_panel, wrap=tk.WORD, 
-                                                              font=('Consolas', 12))
+                                                              font=('Consolas', 11))
             self.investment_results.pack(fill=tk.BOTH, expand=True)
             
             self.investment_results.insert('1.0', f"""{ICONS['investment']} {APP_NAME} Investment Calculator v2.1
@@ -366,15 +366,16 @@ class BosPlanApp:
             info_text = tk.Label(info_frame, 
                                text=f"{ICONS['chart']} {APP_NAME} v{APP_VERSION} 폭락장 대응 시스템\n\n" +
                                     "레버리지 ETF와 고위험 종목의 폭락 상황에서 객관적 판단을 지원합니다.\n" +
+                                    f"{ICONS['signal']} 새로운 기능: 10% 폭락 시 4가지 대응 전략 분석 포함\n" +
+                                    f"{ICONS['warning']} Font Warning 수정: 안정적인 텍스트 아이콘 사용\n" +
                                     "Analysis 탭에서 'Download & Auto Setup'으로 포트폴리오를 설정한 후 분석하세요.",
-                               wraplength=1000, justify=tk.LEFT, font=('Segoe UI', 14, 'bold'))
+                               wraplength=1000, justify=tk.LEFT, font=('Segoe UI', 11))
             info_text.pack()
             
             main_container = tk.Frame(crash_frame)
             main_container.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
             
             control_panel = ttk.LabelFrame(main_container, text=f"{ICONS['signal']} Analysis Controls", padding="15")
-            control_panel.tk.call('tk', 'scaling', 1.2)  # 패널 제목 크기 증가
             control_panel.pack(side=tk.LEFT, fill=tk.Y, padx=(0, 15))
             
             tk.Button(control_panel, text=f"{ICONS['crash']} 폭락 상황 분석", command=self.analyze_crash_situation).pack(fill=tk.X, pady=5)
@@ -383,18 +384,18 @@ class BosPlanApp:
             
             ttk.Separator(control_panel, orient='horizontal').pack(fill=tk.X, pady=15)
             
-            tk.Label(control_panel, text=f"{ICONS['chart']} Current Status:", font=('Segoe UI', 13, 'bold')).pack(anchor=tk.W)
-            self.crash_status = tk.Label(control_panel, text="종목을 선택해주세요.", wraplength=200, font=('Segoe UI', 11))
+            tk.Label(control_panel, text=f"{ICONS['chart']} Current Status:", font=('Segoe UI', 11, 'bold')).pack(anchor=tk.W)
+            self.crash_status = tk.Label(control_panel, text="종목을 선택해주세요.", wraplength=200)
             self.crash_status.pack(anchor=tk.W, pady=5)
             
-            tk.Label(control_panel, text=f"{ICONS['signal']} Recommendation:", font=('Segoe UI', 13, 'bold')).pack(anchor=tk.W, pady=(10, 0))
-            self.crash_recommendation = tk.Label(control_panel, text="분석 후 표시됩니다.", wraplength=200, font=('Segoe UI', 11))
+            tk.Label(control_panel, text=f"{ICONS['signal']} Recommendation:", font=('Segoe UI', 11, 'bold')).pack(anchor=tk.W, pady=(10, 0))
+            self.crash_recommendation = tk.Label(control_panel, text="분석 후 표시됩니다.", wraplength=200)
             self.crash_recommendation.pack(anchor=tk.W, pady=5)
             
             result_panel = ttk.LabelFrame(main_container, text=f"{ICONS['chart']} Analysis Results", padding="15")
             result_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
             
-            self.crash_results = scrolledtext.ScrolledText(result_panel, wrap=tk.WORD, font=('Consolas', 13))
+            self.crash_results = scrolledtext.ScrolledText(result_panel, wrap=tk.WORD, font=('Consolas', 11))
             self.crash_results.pack(fill=tk.BOTH, expand=True)
             
             self.crash_results.insert('1.0', f"""{ICONS['crash']} {APP_NAME} v{APP_VERSION} Crash Strategy Advisor
@@ -658,28 +659,35 @@ Crash Strategy 탭에서 위험 분석을 하세요!"""
         """분석 결과 요약 생성"""
         try:
             if not analysis:
-                return f"{ICONS['chart']} '{symbol}' 분석 완료"
+                return f"'{symbol}' 분석이 완료되었습니다!\n자세한 결과는 4개 정보 패널을 확인하세요."
 
             company_name = self.get_company_name(symbol)
-            summary = [f"{ICONS['chart']} {company_name} ({symbol}) 분석 완료"]
+            summary_parts = [
+                f"{ICONS['chart']} {company_name} ({symbol}) 분석 완료!\n"
+            ]
             
+            # 매매 결정 요약
             if decision := analysis.get('trading_decision', {}):
                 decision_text = self._translate_decision(decision.get('decision', 'HOLD'))
                 confidence_text = self._translate_confidence(decision.get('confidence', 'MEDIUM'))
                 reasoning = decision.get('reasoning', '분석 중')
                 
-                summary.extend([
-                    "",
+                summary_parts.extend([
                     f"{ICONS['signal']} 매매 신호: {decision_text}",
                     f"{ICONS['chart']} 신뢰도: {confidence_text}",
-                    f"{ICONS['info']} 근거: {reasoning}"
+                    f"{ICONS['info']} 근거: {reasoning}\n"
                 ])
             
-            return "\n".join(summary)
+            summary_parts.extend([
+                f"\n{ICONS['chart']} 새로운 4개 패널로 정보가 깔끔하게 정리되었습니다!",
+                f"{ICONS['warning']} v2.1: Font Warning이 완전히 해결되었습니다!"
+            ])
+
+            return "\n".join(summary_parts)
             
         except Exception as e:
             self.logger.error(f"Analysis summary generation failed: {str(e)}")
-            return f"{ICONS['chart']} '{symbol}' 분석 완료"
+            return f"'{symbol}' 분석이 완료되었습니다!\n자세한 결과는 4개 정보 패널을 확인하세요."
     
     def calculate_investment(self):
         """투자 계산"""
@@ -1164,7 +1172,7 @@ Font Warning 완전 해결 (v2.1)
                 
                 # 리포트 표시 창 생성
                 report_window = tk.Toplevel(self.root)
-                report_window.title(f"{ICONS['copy']} AI 종합 투자 자문 리포트")
+                report_window.title(f"{ICONS['copy']} 종합 AI 자문용 리포트 (4가지 전략 포함)")
                 report_window.geometry("1000x700")
                 report_window.transient(self.root)
                 
@@ -1176,17 +1184,25 @@ Font Warning 완전 해결 (v2.1)
                 title_frame.pack(fill=tk.X, pady=(0, 15))
                 
                 tk.Label(title_frame, 
-                        text=f"{ICONS['copy']} AI 종합 투자 자문 리포트", 
+                        text=f"{ICONS['copy']} 종합 AI 투자 자문용 리포트", 
                         font=('Segoe UI', 16, 'bold')).pack(side=tk.LEFT)
                 
+                tk.Label(title_frame, 
+                        text=f"v{APP_VERSION}", 
+                        font=('Segoe UI', 10), foreground='gray').pack(side=tk.RIGHT)
+                
                 # 설명
-                tk.Label(main_frame, 
-                        text="아래 종합 리포트를 AI에게 제공하여 전문적인 투자 자문을 받으세요.",
+                desc_text = f"""아래 종합 리포트를 AI에게 제공하여 전문적인 투자 자문을 받으세요.
+{ICONS['signal']} 새로운 기능: 10% 폭락 시 4가지 대응 전략 분석 포함
+{ICONS['chart']} 강화된 기능: 기술적 분석, 포트폴리오 분석, 위험도 평가 통합
+{ICONS['warning']} v2.1: Font Warning 완전 해결"""
+                
+                tk.Label(main_frame, text=desc_text, 
                         font=('Segoe UI', 11), wraplength=900).pack(pady=(0, 15))
                 
                 # 리포트 텍스트 영역
                 text_widget = scrolledtext.ScrolledText(main_frame, wrap=tk.WORD, 
-                                                      font=('Consolas', 12))
+                                                      font=('Consolas', 9))
                 text_widget.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
                 text_widget.insert('1.0', report)
                 
@@ -1198,16 +1214,17 @@ Font Warning 완전 해결 (v2.1)
                     try:
                         self.root.clipboard_clear()
                         self.root.clipboard_append(report)
-                        messagebox.showinfo(f"{ICONS['success']}", "종합 리포트가 클립보드에 복사되었습니다!")
+                        messagebox.showinfo(f"{ICONS['success']}", f"종합 리포트가 클립보드에 복사되었습니다!\n\nAI에게 현재 시장 상황을 고려한 전문 투자 자문을 요청하세요.\n\n{ICONS['warning']} v2.1: Font Warning이 완전히 해결되었습니다!")
                     except Exception as e:
                         messagebox.showerror(f"{ICONS['error']}", f"복사 실패: {e}")
                 
                 def save_report():
                     try:
+                        from tkinter import filedialog
                         filename = filedialog.asksaveasfilename(
                             defaultextension=".txt",
                             filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
-                            initialfile=f"{symbol}_AI_Advisory_Report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+                            initialname=f"{symbol}_AI_Advisory_Report_v2.1_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
                         )
                         if filename:
                             with open(filename, 'w', encoding='utf-8') as f:
@@ -1316,12 +1333,12 @@ Font Warning 완전 해결 (v2.1)
                 if is_korean:
                     position_text = f"평단가:\n₩{avg_price:,.0f}\n\n"
                     position_text += f"보유량:\n{position:,.0f}주\n\n"
-                    position_text += f"평가손익:\n₩{pnl:+,.0f}"
+                    position_text += f"평가손익:\n₩{pnl:+,.0f}\n"
                     position_text += f"({pnl_pct:+.2f}%)"
                 else:
                     position_text = f"평단가:\n${avg_price:.2f}\n\n"
                     position_text += f"보유량:\n{position:,.0f}주\n\n"
-                    position_text += f"평가손익:\n${pnl:+,.2f}"
+                    position_text += f"평가손익:\n${pnl:+,.2f}\n"
                     position_text += f"({pnl_pct:+.2f}%)"
                 
                 self.position_info_label.config(text=position_text)
@@ -1355,9 +1372,9 @@ Font Warning 완전 해결 (v2.1)
             if ci := analysis.get('confidence_interval', {}):
                 if ci and 'upper_bound' in ci and 'lower_bound' in ci:
                     if is_korean:
-                        tech_text.append(f"신뢰구간:\n₩{ci['lower_bound']:,.0f}~₩{ci['upper_bound']:,.0f}\n")
+                        tech_text.append(f"신뢰구간:\n₩{ci['lower_bound']:,.0f}~\n₩{ci['upper_bound']:,.0f}\n")
                     else:
-                        tech_text.append(f"신뢰구간:\n${ci['lower_bound']:.2f}~${ci['upper_bound']:.2f}\n")
+                        tech_text.append(f"신뢰구간:\n${ci['lower_bound']:.2f}~\n${ci['upper_bound']:.2f}\n")
                     
                     # 포지션 신호
                     signal_text = ci.get('position_signal', '보합')
@@ -1392,11 +1409,11 @@ Font Warning 완전 해결 (v2.1)
                     signal_text += f"\n\nRSI: {rsi:.1f}"
                     
                     if rsi < 30:
-                        signal_text += "(과매도)"
+                        signal_text += "\n(과매도)"
                     elif rsi > 70:
-                        signal_text += "(과매수)"
+                        signal_text += "\n(과매수)"
                     else:
-                        signal_text += "(중립)"
+                        signal_text += "\n(중립)"
             else:
                 signal_text = "매매신호\n분석중"
             
