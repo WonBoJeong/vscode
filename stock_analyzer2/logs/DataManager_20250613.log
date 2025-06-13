@@ -1,0 +1,18 @@
+[2025-06-13 01:37:43] INFO: Starting download for VTV
+[2025-06-13 01:37:43] INFO: US stock: VTV
+[2025-06-13 01:37:47] INFO: Download completed: VTV_250613.csv (2516 rows)
+[2025-06-13 01:38:55] INFO: Starting download for TSLA
+[2025-06-13 01:38:55] INFO: US stock: TSLA
+[2025-06-13 01:38:56] INFO: Download completed: TSLA_250613.csv (2516 rows)
+[2025-06-13 01:39:54] INFO: Starting download for TQQQ
+[2025-06-13 01:39:54] INFO: US stock: TQQQ
+[2025-06-13 01:39:55] INFO: Download completed: TQQQ_250613.csv (2516 rows)
+[2025-06-13 01:48:48] INFO: Starting download for NVDA
+[2025-06-13 01:48:48] INFO: US stock: NVDA
+[2025-06-13 01:48:48] INFO: Download completed: NVDA_250613.csv (2516 rows)
+[2025-06-13 01:49:25] INFO: Starting download for TSLA
+[2025-06-13 01:49:25] INFO: US stock: TSLA
+[2025-06-13 01:49:25] INFO: Download completed: TSLA_250613.csv (2516 rows)
+[2025-06-13 01:50:16] INFO: Starting download for META
+[2025-06-13 01:50:16] INFO: US stock: META
+[2025-06-13 01:50:17] INFO: Download completed: META_250613.csv (2516 rows)
