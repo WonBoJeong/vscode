@@ -1,4 +1,0 @@
-[2025-06-13 12:21:58] ERROR: AttributeError: 'ChartManager' object has no attribute 'parent_widget'
-[2025-06-13 12:24:35] ERROR: AttributeError: 'ChartManager' object has no attribute '_on_mouse_move'
-[2025-06-13 12:25:57] ERROR: AttributeError: 'ChartManager' object has no attribute 'period'
-[2025-06-13 12:44:35] ERROR: TclError: unknown option "-bg"
